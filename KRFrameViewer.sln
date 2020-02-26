@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29609.76
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KRFrameViewer", "KRFrameViewer.csproj", "{9C8CE749-F64C-425C-8629-50BBF7E693AC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1EB60A44-52A8-46FE-A8BD-5C56FEED73C1}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9C8CE749-F64C-425C-8629-50BBF7E693AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C8CE749-F64C-425C-8629-50BBF7E693AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C8CE749-F64C-425C-8629-50BBF7E693AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C8CE749-F64C-425C-8629-50BBF7E693AC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D5F1F5D4-A061-4250-83D2-30CB86D5C60C}
+	EndGlobalSection
+EndGlobal

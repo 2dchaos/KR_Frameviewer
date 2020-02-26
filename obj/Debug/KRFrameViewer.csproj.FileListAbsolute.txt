@@ -1,0 +1,9 @@
+D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\bin\Debug\KRFrameViewer.exe
+D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\bin\Debug\KRFrameViewer.pdb
+D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\obj\Debug\KRFrameViewer.csprojAssemblyReference.cache
+D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\obj\Debug\KRFrameViewer.About.resources
+D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\obj\Debug\KRFrameViewer.Form1.resources
+D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\obj\Debug\KRFrameViewer.Properties.Resources.resources
+D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\obj\Debug\KRFrameViewer.csproj.GenerateResource.cache
+D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\obj\Debug\KRFrameViewer.exe
+D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\obj\Debug\KRFrameViewer.pdb
