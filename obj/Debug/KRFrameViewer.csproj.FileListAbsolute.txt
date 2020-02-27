@@ -7,3 +7,12 @@ D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\obj\Debug\KRFrameViewer.Pro
 D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\obj\Debug\KRFrameViewer.csproj.GenerateResource.cache
 D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\obj\Debug\KRFrameViewer.exe
 D:\UO\tools\KR_frame_paperdoll_viewer\decompiled_src\obj\Debug\KRFrameViewer.pdb
+C:\Repositories\KR_Frameviewer\bin\Debug\KRFrameViewer.exe
+C:\Repositories\KR_Frameviewer\bin\Debug\KRFrameViewer.pdb
+C:\Repositories\KR_Frameviewer\obj\Debug\KRFrameViewer.csprojAssemblyReference.cache
+C:\Repositories\KR_Frameviewer\obj\Debug\KRFrameViewer.About.resources
+C:\Repositories\KR_Frameviewer\obj\Debug\KRFrameViewer.KRFrameViewer.resources
+C:\Repositories\KR_Frameviewer\obj\Debug\KRFrameViewer.Properties.Resources.resources
+C:\Repositories\KR_Frameviewer\obj\Debug\KRFrameViewer.csproj.GenerateResource.cache
+C:\Repositories\KR_Frameviewer\obj\Debug\KRFrameViewer.exe
+C:\Repositories\KR_Frameviewer\obj\Debug\KRFrameViewer.pdb

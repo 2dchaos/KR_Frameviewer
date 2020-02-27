@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace KRFrameViewer
 {
-	public class Form1 : Form
+	public class KRFrameViewer : Form
 	{
 		private IContainer components;
 
@@ -56,7 +56,7 @@ namespace KRFrameViewer
 		private byte[] _ImageData;
 
 		private long _ImageDataOffset;
-		private OpenFileDialog openFileDialog2;
+		private OpenFileDialog openFileDialog1;
 		private TreeView tree_frames;
 		private PictureBox colorTableFrame;
 		private Label label1;
@@ -75,79 +75,363 @@ namespace KRFrameViewer
 		private ToolStripContentPanel ContentPanel;
 		private ToolStripButton exportButton;
 		private string m_ExtractionFolder;
+		
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && this.components != null)
+			{
+				this.components.Dispose();
+			}
+			base.Dispose(disposing);
+		}
 
-		public Form1()
+		public void InitializeComponent()
+		{
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(KRFrameViewer));
+            this.btn_openToolStrip = new System.Windows.Forms.ToolStripButton();
+            this.btn_SaveToolstrip = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
+            this.btn_about = new System.Windows.Forms.ToolStripButton();
+            this.worker = new System.ComponentModel.BackgroundWorker();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.BottomToolStripPanel = new System.Windows.Forms.ToolStripPanel();
+            this.TopToolStripPanel = new System.Windows.Forms.ToolStripPanel();
+            this.RightToolStripPanel = new System.Windows.Forms.ToolStripPanel();
+            this.LeftToolStripPanel = new System.Windows.Forms.ToolStripPanel();
+            this.ContentPanel = new System.Windows.Forms.ToolStripContentPanel();
+            this.tree_frames = new System.Windows.Forms.TreeView();
+            this.colorTableFrame = new System.Windows.Forms.PictureBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.mainImageFrame = new System.Windows.Forms.PictureBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.statusBar = new System.Windows.Forms.TextBox();
+            this.txt_info = new System.Windows.Forms.RichTextBox();
+            this.pBar = new System.Windows.Forms.ProgressBar();
+            this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
+            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.openButton = new System.Windows.Forms.ToolStripButton();
+            this.exportButton = new System.Windows.Forms.ToolStripButton();
+            ((System.ComponentModel.ISupportInitialize)(this.colorTableFrame)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.mainImageFrame)).BeginInit();
+            this.toolStripContainer1.ContentPanel.SuspendLayout();
+            this.toolStripContainer1.SuspendLayout();
+            this.toolStrip1.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // btn_openToolStrip
+            // 
+            this.btn_openToolStrip.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_openToolStrip.Name = "btn_openToolStrip";
+            this.btn_openToolStrip.Size = new System.Drawing.Size(56, 22);
+            this.btn_openToolStrip.Text = "&Open";
+            this.btn_openToolStrip.Click += new System.EventHandler(this.OpenButtonClick);
+            // 
+            // btn_SaveToolstrip
+            // 
+            this.btn_SaveToolstrip.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_SaveToolstrip.Name = "btn_SaveToolstrip";
+            this.btn_SaveToolstrip.Size = new System.Drawing.Size(79, 22);
+            this.btn_SaveToolstrip.Text = "&Extract All";
+            this.btn_SaveToolstrip.Click += new System.EventHandler(this.exportButton_Click);
+            // 
+            // toolStripSeparator
+            // 
+            this.toolStripSeparator.Name = "toolStripSeparator";
+            this.toolStripSeparator.Size = new System.Drawing.Size(6, 25);
+            // 
+            // btn_about
+            // 
+            this.btn_about.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.btn_about.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btn_about.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btn_about.Name = "btn_about";
+            this.btn_about.Size = new System.Drawing.Size(23, 22);
+            this.btn_about.Text = "He&lp";
+            this.btn_about.Click += new System.EventHandler(this.AboutButtonClick);
+            // 
+            // worker
+            // 
+            this.worker.WorkerReportsProgress = true;
+            this.worker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.worker_DoWork);
+            this.worker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.worker_ProgressChanged);
+            this.worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
+            // 
+            // folderBrowserDialog1
+            // 
+            this.folderBrowserDialog1.RootFolder = System.Environment.SpecialFolder.MyComputer;
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.Multiselect = true;
+            // 
+            // BottomToolStripPanel
+            // 
+            this.BottomToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.BottomToolStripPanel.Name = "BottomToolStripPanel";
+            this.BottomToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.BottomToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.BottomToolStripPanel.Size = new System.Drawing.Size(0, 0);
+            // 
+            // TopToolStripPanel
+            // 
+            this.TopToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.TopToolStripPanel.Name = "TopToolStripPanel";
+            this.TopToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.TopToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.TopToolStripPanel.Size = new System.Drawing.Size(0, 0);
+            // 
+            // RightToolStripPanel
+            // 
+            this.RightToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.RightToolStripPanel.Name = "RightToolStripPanel";
+            this.RightToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.RightToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.RightToolStripPanel.Size = new System.Drawing.Size(0, 0);
+            // 
+            // LeftToolStripPanel
+            // 
+            this.LeftToolStripPanel.Location = new System.Drawing.Point(0, 0);
+            this.LeftToolStripPanel.Name = "LeftToolStripPanel";
+            this.LeftToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.LeftToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.LeftToolStripPanel.Size = new System.Drawing.Size(0, 0);
+            // 
+            // ContentPanel
+            // 
+            this.ContentPanel.Size = new System.Drawing.Size(150, 3);
+            // 
+            // tree_frames
+            // 
+            this.tree_frames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.tree_frames.Location = new System.Drawing.Point(12, 42);
+            this.tree_frames.Name = "tree_frames";
+            this.tree_frames.Size = new System.Drawing.Size(96, 425);
+            this.tree_frames.TabIndex = 1;
+            this.tree_frames.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.tree_frames_BeforeSelect);
+            this.tree_frames.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tree_frames_AfterSelect);
+            this.tree_frames.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tree_frames_NodeMouseClick);
+            // 
+            // colorTableFrame
+            // 
+            this.colorTableFrame.BackColor = System.Drawing.SystemColors.Info;
+            this.colorTableFrame.Location = new System.Drawing.Point(114, 42);
+            this.colorTableFrame.Name = "colorTableFrame";
+            this.colorTableFrame.Size = new System.Drawing.Size(480, 101);
+            this.colorTableFrame.TabIndex = 2;
+            this.colorTableFrame.TabStop = false;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(114, 25);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(69, 13);
+            this.label1.TabIndex = 3;
+            this.label1.Text = "Colors Table:";
+            // 
+            // mainImageFrame
+            // 
+            this.mainImageFrame.BackColor = System.Drawing.Color.AliceBlue;
+            this.mainImageFrame.Location = new System.Drawing.Point(114, 169);
+            this.mainImageFrame.MinimumSize = new System.Drawing.Size(270, 270);
+            this.mainImageFrame.Name = "mainImageFrame";
+            this.mainImageFrame.Size = new System.Drawing.Size(270, 270);
+            this.mainImageFrame.TabIndex = 4;
+            this.mainImageFrame.TabStop = false;
+            this.mainImageFrame.WaitOnLoad = true;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(114, 152);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(39, 13);
+            this.label2.TabIndex = 5;
+            this.label2.Text = "Frame:";
+            // 
+            // statusBar
+            // 
+            this.statusBar.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.statusBar.Location = new System.Drawing.Point(0, 439);
+            this.statusBar.Name = "statusBar";
+            this.statusBar.ReadOnly = true;
+            this.statusBar.Size = new System.Drawing.Size(627, 20);
+            this.statusBar.TabIndex = 6;
+            // 
+            // txt_info
+            // 
+            this.txt_info.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txt_info.Location = new System.Drawing.Point(390, 169);
+            this.txt_info.Name = "txt_info";
+            this.txt_info.ReadOnly = true;
+            this.txt_info.Size = new System.Drawing.Size(183, 226);
+            this.txt_info.TabIndex = 7;
+            this.txt_info.Text = "";
+            // 
+            // pBar
+            // 
+            this.pBar.Location = new System.Drawing.Point(291, 12);
+            this.pBar.Name = "pBar";
+            this.pBar.Size = new System.Drawing.Size(336, 10);
+            this.pBar.TabIndex = 9;
+            // 
+            // toolStripContainer1
+            // 
+            // 
+            // toolStripContainer1.ContentPanel
+            // 
+            this.toolStripContainer1.ContentPanel.AutoScroll = true;
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.toolStrip1);
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.pBar);
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.txt_info);
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.statusBar);
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.label2);
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.mainImageFrame);
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.label1);
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.colorTableFrame);
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.tree_frames);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(639, 457);
+            this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
+            this.toolStripContainer1.Name = "toolStripContainer1";
+            this.toolStripContainer1.Size = new System.Drawing.Size(639, 482);
+            this.toolStripContainer1.TabIndex = 10;
+            this.toolStripContainer1.Text = "toolStripContainer1";
+            // 
+            // toolStrip1
+            // 
+            this.toolStrip1.AllowMerge = false;
+            this.toolStrip1.Dock = System.Windows.Forms.DockStyle.None;
+            this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openButton,
+            this.exportButton});
+            this.toolStrip1.Location = new System.Drawing.Point(9, 3);
+            this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.Size = new System.Drawing.Size(87, 25);
+            this.toolStrip1.TabIndex = 8;
+            this.toolStrip1.Text = "toolStrip1";
+            // 
+            // openButton
+            // 
+            this.openButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.openButton.Image = ((System.Drawing.Image)(resources.GetObject("openButton.Image")));
+            this.openButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.openButton.Name = "openButton";
+            this.openButton.Size = new System.Drawing.Size(40, 22);
+            this.openButton.Text = "Open";
+            this.openButton.Click += new System.EventHandler(this.OpenButtonClick);
+            // 
+            // exportButton
+            // 
+            this.exportButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.exportButton.Image = ((System.Drawing.Image)(resources.GetObject("exportButton.Image")));
+            this.exportButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.exportButton.Name = "exportButton";
+            this.exportButton.Size = new System.Drawing.Size(44, 22);
+            this.exportButton.Text = "Export";
+            this.exportButton.ToolTipText = "Export";
+            this.exportButton.Click += new System.EventHandler(this.exportButton_Click);
+            // 
+            // KRFrameViewer
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(639, 482);
+            this.Controls.Add(this.toolStripContainer1);
+            this.MaximizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(549, 503);
+            this.Name = "KRFrameViewer";
+            this.ShowIcon = false;
+            this.Text = "KRFrameViewer 0.6.1";
+            ((System.ComponentModel.ISupportInitialize)(this.colorTableFrame)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.mainImageFrame)).EndInit();
+            this.toolStripContainer1.ContentPanel.ResumeLayout(false);
+            this.toolStripContainer1.ContentPanel.PerformLayout();
+            this.toolStripContainer1.ResumeLayout(false);
+            this.toolStripContainer1.PerformLayout();
+            this.toolStrip1.ResumeLayout(false);
+            this.toolStrip1.PerformLayout();
+            this.ResumeLayout(false);
+
+		}
+		public KRFrameViewer()
 		{
 			this.InitializeComponent();
 			this.m_Colours = new List<ColorEntry>();
 			this.m_Frames = new List<FrameEntry>();
 		}
 
-		private void btn_about_Click(object sender, EventArgs e)
+		private void AboutButtonClick(object sender, EventArgs e)
 		{
 			(new About()).ShowDialog();
 		}
 
-		private void openButton_Click(object sender, EventArgs e)
+		private void OpenButtonClick(object sender, EventArgs e)
 		{
-			if (this.openFileDialog2.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+			if (openFileDialog1.ShowDialog() == DialogResult.OK)
 			{
-				this.Clear();
-				using (FileStream fileStream = new FileStream(this.openFileDialog2.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+				Clear();
+				using (var fileStream = new FileStream(openFileDialog1.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				{
 					using (BinaryReader binaryReader = new BinaryReader(fileStream))
 					{
-						if (!this.ReadHeader(binaryReader))
+						if (!ReadHeader(binaryReader))
 						{
-							this.statusBar.Text = "THIS IS NOT ANIMATIONFRAME.BIN FILE!";
+							statusBar.Text = "Invalid file.";
 						}
 						else
 						{
-							this.ReadColors(binaryReader);
-							this.ReadFrames(binaryReader);
-							this.ReadPixels(binaryReader);
+							ReadColors(binaryReader);
+							ReadFrames(binaryReader);
+							ReadPixels(binaryReader);
 						}
 					}
 				}
 
 
-				//Creates a color strip
-				Bitmap colorImgBmp = new Bitmap((int)(this.m_ColorCount + 100), 101);
-				int num = 0;
-				for (int i = 0; i < this.m_Colours.Count; i++)
+                //Creates a color strip
+				Bitmap colorBarBitmap = new Bitmap((int)m_ColorCount + 100, 100);
+				var num = 0;
+				for (var x = 0; x < this.m_Colours.Count; x++)
 				{
-					Color pixel = this.m_Colours[i].Pixel;
-					if (i % 32 == 0)
+					Color pixel = this.m_Colours[x].Pixel;
+					if (x % 32 == 0)
 					{
 						num += 10;
 					}
-					for (int j = 0; j < 100; j++)
+					for (var y = 0; y < 100; y++)
 					{
-						colorImgBmp.SetPixel(i + num, j, pixel);
+						colorBarBitmap.SetPixel(x + num, y, pixel);
 					}
-					colorImgBmp.SetPixel(i + num, 100, Color.Black);
+					colorBarBitmap.SetPixel(x + num, 100, Color.Black);
 				}
 
 				PictureBox size = this.colorTableFrame;
-				System.Drawing.Size size1 = this.colorTableFrame.Size;
-				size.Size = new System.Drawing.Size((int)(this.m_ColorCount + 100), size1.Height);
-				this.colorTableFrame.Image = colorImgBmp;
+				Size size1 = this.colorTableFrame.Size;
 
-				for (int k = 0; (Int64)k < (Int64)this.m_FrameCount; k++)
-				{
-					TreeNode treeNode = new TreeNode()
-					{
-						Tag = this.m_Frames[k]
-					};
-					ushort frame = this.m_Frames[k].Frame;
+				size.Size = new System.Drawing.Size((int)(this.m_ColorCount + 100), size1.Height);
+				this.colorTableFrame.Image = colorBarBitmap;
+
+				for (var f = 0; f < this.m_FrameCount; f++)
+                {
+                    TreeNode treeNode = new TreeNode()
+                    {
+                        Tag = this.m_Frames[f]
+                    };
+					ushort frame = this.m_Frames[f].Frame;
 					treeNode.Text = frame.ToString();
 					this.tree_frames.Nodes.Add(treeNode);
 				}
 			}
 		}
 
-        //TODO: Fix the export function so you can choose a directory
-		private void exportButton_Click(object sender, EventArgs e)
+        private void exportButton_Click(object sender, EventArgs e)
 		{
 			if (this.folderBrowserDialog1.ShowDialog() == DialogResult.OK)
 			{
@@ -179,12 +463,8 @@ namespace KRFrameViewer
         }
 
 
-		//TODO: Save the image together with the background for the Gumps
-		//TODO: Create a liste.txt with the X and Y offsets of each frame
-		//0:0
-		//CenterX:x
-		//CenterY:y
-		//TODO: Make it so it's possible to open more than one bin file at a time.
+		//TODO: Save the image together with the background for the Gump
+        //TODO: Make it so it's possible to open more than one bin file at a time.
 		//TODO: Make it so it's possible to open a entire folder full of subfolders inside
 		//TODO: Export to .vd directly
 
@@ -316,288 +596,7 @@ namespace KRFrameViewer
 			return Color.FromArgb((int)num10);
 		}
 
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing && this.components != null)
-			{
-				this.components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
 
-		public void InitializeComponent()
-		{
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            this.btn_openToolStrip = new System.Windows.Forms.ToolStripButton();
-            this.btn_SaveToolstrip = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
-            this.btn_about = new System.Windows.Forms.ToolStripButton();
-            this.worker = new System.ComponentModel.BackgroundWorker();
-            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
-            this.BottomToolStripPanel = new System.Windows.Forms.ToolStripPanel();
-            this.TopToolStripPanel = new System.Windows.Forms.ToolStripPanel();
-            this.RightToolStripPanel = new System.Windows.Forms.ToolStripPanel();
-            this.LeftToolStripPanel = new System.Windows.Forms.ToolStripPanel();
-            this.ContentPanel = new System.Windows.Forms.ToolStripContentPanel();
-            this.tree_frames = new System.Windows.Forms.TreeView();
-            this.colorTableFrame = new System.Windows.Forms.PictureBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.mainImageFrame = new System.Windows.Forms.PictureBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.statusBar = new System.Windows.Forms.TextBox();
-            this.txt_info = new System.Windows.Forms.RichTextBox();
-            this.pBar = new System.Windows.Forms.ProgressBar();
-            this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.openButton = new System.Windows.Forms.ToolStripButton();
-            this.exportButton = new System.Windows.Forms.ToolStripButton();
-            ((System.ComponentModel.ISupportInitialize)(this.colorTableFrame)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.mainImageFrame)).BeginInit();
-            this.toolStripContainer1.ContentPanel.SuspendLayout();
-            this.toolStripContainer1.SuspendLayout();
-            this.toolStrip1.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // btn_openToolStrip
-            // 
-            this.btn_openToolStrip.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_openToolStrip.Name = "btn_openToolStrip";
-            this.btn_openToolStrip.Size = new System.Drawing.Size(56, 22);
-            this.btn_openToolStrip.Text = "&Open";
-            this.btn_openToolStrip.Click += new System.EventHandler(this.openButton_Click);
-            // 
-            // btn_SaveToolstrip
-            // 
-            this.btn_SaveToolstrip.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_SaveToolstrip.Name = "btn_SaveToolstrip";
-            this.btn_SaveToolstrip.Size = new System.Drawing.Size(79, 22);
-            this.btn_SaveToolstrip.Text = "&Extract All";
-            this.btn_SaveToolstrip.Click += new System.EventHandler(this.exportButton_Click);
-            // 
-            // toolStripSeparator
-            // 
-            this.toolStripSeparator.Name = "toolStripSeparator";
-            this.toolStripSeparator.Size = new System.Drawing.Size(6, 25);
-            // 
-            // btn_about
-            // 
-            this.btn_about.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.btn_about.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btn_about.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_about.Name = "btn_about";
-            this.btn_about.Size = new System.Drawing.Size(23, 22);
-            this.btn_about.Text = "He&lp";
-            this.btn_about.Click += new System.EventHandler(this.btn_about_Click);
-            // 
-            // worker
-            // 
-            this.worker.WorkerReportsProgress = true;
-            this.worker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.worker_DoWork);
-            this.worker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.worker_ProgressChanged);
-            this.worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
-            // 
-            // folderBrowserDialog1
-            // 
-            this.folderBrowserDialog1.RootFolder = System.Environment.SpecialFolder.MyDocuments;
-            // 
-            // openFileDialog2
-            // 
-            this.openFileDialog2.FileName = "openFileDialog1";
-            // 
-            // BottomToolStripPanel
-            // 
-            this.BottomToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.BottomToolStripPanel.Name = "BottomToolStripPanel";
-            this.BottomToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.BottomToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.BottomToolStripPanel.Size = new System.Drawing.Size(0, 0);
-            // 
-            // TopToolStripPanel
-            // 
-            this.TopToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.TopToolStripPanel.Name = "TopToolStripPanel";
-            this.TopToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.TopToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.TopToolStripPanel.Size = new System.Drawing.Size(0, 0);
-            // 
-            // RightToolStripPanel
-            // 
-            this.RightToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.RightToolStripPanel.Name = "RightToolStripPanel";
-            this.RightToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.RightToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.RightToolStripPanel.Size = new System.Drawing.Size(0, 0);
-            // 
-            // LeftToolStripPanel
-            // 
-            this.LeftToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.LeftToolStripPanel.Name = "LeftToolStripPanel";
-            this.LeftToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.LeftToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.LeftToolStripPanel.Size = new System.Drawing.Size(0, 0);
-            // 
-            // ContentPanel
-            // 
-            this.ContentPanel.Size = new System.Drawing.Size(150, 3);
-            // 
-            // tree_frames
-            // 
-            this.tree_frames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.tree_frames.Location = new System.Drawing.Point(12, 42);
-            this.tree_frames.Name = "tree_frames";
-            this.tree_frames.Size = new System.Drawing.Size(96, 463);
-            this.tree_frames.TabIndex = 1;
-            this.tree_frames.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.tree_frames_BeforeSelect);
-            this.tree_frames.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tree_frames_AfterSelect);
-            this.tree_frames.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tree_frames_NodeMouseClick);
-            // 
-            // colorTableFrame
-            // 
-            this.colorTableFrame.BackColor = System.Drawing.SystemColors.Info;
-            this.colorTableFrame.Location = new System.Drawing.Point(114, 42);
-            this.colorTableFrame.Name = "colorTableFrame";
-            this.colorTableFrame.Size = new System.Drawing.Size(407, 101);
-            this.colorTableFrame.TabIndex = 2;
-            this.colorTableFrame.TabStop = false;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(114, 25);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(69, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Colors Table:";
-            // 
-            // mainImageFrame
-            // 
-            this.mainImageFrame.BackColor = System.Drawing.Color.AliceBlue;
-            this.mainImageFrame.Location = new System.Drawing.Point(114, 169);
-            this.mainImageFrame.MinimumSize = new System.Drawing.Size(270, 270);
-            this.mainImageFrame.Name = "mainImageFrame";
-            this.mainImageFrame.Size = new System.Drawing.Size(270, 270);
-            this.mainImageFrame.TabIndex = 4;
-            this.mainImageFrame.TabStop = false;
-            this.mainImageFrame.WaitOnLoad = true;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(114, 152);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(39, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Frame:";
-            // 
-            // statusBar
-            // 
-            this.statusBar.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.statusBar.Location = new System.Drawing.Point(0, 462);
-            this.statusBar.Name = "statusBar";
-            this.statusBar.ReadOnly = true;
-            this.statusBar.Size = new System.Drawing.Size(639, 20);
-            this.statusBar.TabIndex = 6;
-            // 
-            // txt_info
-            // 
-            this.txt_info.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txt_info.Location = new System.Drawing.Point(390, 169);
-            this.txt_info.Name = "txt_info";
-            this.txt_info.ReadOnly = true;
-            this.txt_info.Size = new System.Drawing.Size(219, 270);
-            this.txt_info.TabIndex = 7;
-            this.txt_info.Text = "";
-            // 
-            // pBar
-            // 
-            this.pBar.Location = new System.Drawing.Point(291, 12);
-            this.pBar.Name = "pBar";
-            this.pBar.Size = new System.Drawing.Size(336, 10);
-            this.pBar.TabIndex = 9;
-            // 
-            // toolStripContainer1
-            // 
-            // 
-            // toolStripContainer1.ContentPanel
-            // 
-            this.toolStripContainer1.ContentPanel.AutoScroll = true;
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.toolStrip1);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.pBar);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.txt_info);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.statusBar);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.label2);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.mainImageFrame);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.label1);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.colorTableFrame);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.tree_frames);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(639, 482);
-            this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
-            this.toolStripContainer1.Name = "toolStripContainer1";
-            this.toolStripContainer1.Size = new System.Drawing.Size(639, 482);
-            this.toolStripContainer1.TabIndex = 10;
-            this.toolStripContainer1.Text = "toolStripContainer1";
-
-            // 
-            // toolStrip1
-            // 
-            this.toolStrip1.Dock = System.Windows.Forms.DockStyle.None;
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openButton,
-            this.exportButton});
-            this.toolStrip1.Location = new System.Drawing.Point(9, 3);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(127, 25);
-            this.toolStrip1.TabIndex = 8;
-            this.toolStrip1.Text = "toolStrip1";
-            // 
-            // openButton
-            // 
-            this.openButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.openButton.Image = ((System.Drawing.Image)(resources.GetObject("openButton.Image")));
-            this.openButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.openButton.Name = "openButton";
-            this.openButton.Size = new System.Drawing.Size(40, 22);
-            this.openButton.Text = "Open";
-            this.openButton.Click += new System.EventHandler(this.openButton_Click);
-            // 
-            // exportButton
-            // 
-            this.exportButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.exportButton.Image = ((System.Drawing.Image)(resources.GetObject("exportButton.Image")));
-            this.exportButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.exportButton.Name = "exportButton";
-            this.exportButton.Size = new System.Drawing.Size(44, 22);
-            this.exportButton.Text = "Export";
-            this.exportButton.ToolTipText = "Export";
-            this.exportButton.Click += new System.EventHandler(this.exportButton_Click);
-            // 
-            // Form1
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(639, 482);
-            this.Controls.Add(this.toolStripContainer1);
-            this.MaximizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(549, 503);
-            this.Name = "Form1";
-            this.ShowIcon = false;
-            this.Text = "KRFrameViewer 0.6.1";
-            ((System.ComponentModel.ISupportInitialize)(this.colorTableFrame)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.mainImageFrame)).EndInit();
-            this.toolStripContainer1.ContentPanel.ResumeLayout(false);
-            this.toolStripContainer1.ContentPanel.PerformLayout();
-            this.toolStripContainer1.ResumeLayout(false);
-            this.toolStripContainer1.PerformLayout();
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
-            this.ResumeLayout(false);
-
-		}
 
 
 		//Inner image frame
