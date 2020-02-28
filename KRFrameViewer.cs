@@ -477,8 +477,7 @@ namespace KRFrameViewer
 			if (this.folderBrowserDialog1.ShowDialog() == DialogResult.OK)
 			{
 				this.m_ExtractionFolder = this.folderBrowserDialog1.SelectedPath;
-                //MessageBox.Show("Selected folder is:" + m_ExtractionFolder);
-				this.worker.RunWorkerAsync();
+                this.worker.RunWorkerAsync();
 			}
 			this.pBar.Maximum = this.tree_frames.Nodes.Count;
 			this.pBar.Minimum = 0;
@@ -531,7 +530,7 @@ namespace KRFrameViewer
 			{
 				for (int y = 0; y < backgroundImgHeight; y++)
 				{
-					backgroundImage.SetPixel(x, y, Color.Pink);
+					backgroundImage.SetPixel(x, y, Color.White);
 				}
 			}
 
@@ -658,7 +657,7 @@ namespace KRFrameViewer
 			{
 				for (y = 0; y < frameHeight; y++)
                 {
-                    var color = Color.PaleGreen;
+                    var color = Color.White;
 					frameImage.SetPixel(x, y, color);
                 }
 			}
