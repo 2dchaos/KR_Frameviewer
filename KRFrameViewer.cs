@@ -7,6 +7,47 @@ using System.IO;
 using System.Text;
 using System.Windows.Forms;
 
+
+//Animation Frame File Format(.BIN)
+//---------------------------------
+
+//[1]
+//Format Header
+//BYTE	-> 'A' Animal
+//BYTE	-> 'M' Monster
+//BYTE	-> 'O' Other
+//BYTE	-> 'U' Underwater
+//DWORD	-> Version
+//DWORD	-> Length
+//DWORD	-> Animation ID
+//WORD	-> start coord X, relative to center of a tile
+//WORD	-> start coord Y, relative to center of a tile
+//WORD	-> end coord X, relative to center of a tile
+//WORD	-> end coord Y, relative to center of a tile
+//DWORD	-> Color count
+//DWORD	-> Color table address
+//DWORD	-> Frame count
+//DWORD	-> Frame table address
+
+//	[2] Color table
+//	BYTE	-> R
+//	BYTE	-> G
+//	BYTE	-> B
+//	BYTE	-> Alpha
+
+//	[3] Frame table
+//	WORD	-> Move ID
+//	WORD	-> Frame number
+//	WORD	-> start coord X, relative to center of a tile
+//	WORD	-> start coord Y, relative to center of a tile
+//	WORD	-> end coord X, relative to center of a tile
+//	WORD	-> end coord Y, relative to center of a tile
+//	DWORD	-> Frame pixel data offset, relative to start of the frame table
+
+//	[4]  Pixel data
+//	Unknown
+
+
 namespace KRFrameViewer
 {
 	public class KRFrameViewer : Form
@@ -208,7 +249,7 @@ namespace KRFrameViewer
             | System.Windows.Forms.AnchorStyles.Left)));
             this.tree_frames.Location = new System.Drawing.Point(12, 42);
             this.tree_frames.Name = "tree_frames";
-            this.tree_frames.Size = new System.Drawing.Size(96, 425);
+            this.tree_frames.Size = new System.Drawing.Size(96, 477);
             this.tree_frames.TabIndex = 1;
             this.tree_frames.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.tree_frames_BeforeSelect);
             this.tree_frames.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tree_frames_AfterSelect);
@@ -255,10 +296,10 @@ namespace KRFrameViewer
             // statusBar
             // 
             this.statusBar.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.statusBar.Location = new System.Drawing.Point(0, 439);
+            this.statusBar.Location = new System.Drawing.Point(0, 489);
             this.statusBar.Name = "statusBar";
             this.statusBar.ReadOnly = true;
-            this.statusBar.Size = new System.Drawing.Size(627, 20);
+            this.statusBar.Size = new System.Drawing.Size(641, 20);
             this.statusBar.TabIndex = 6;
             // 
             // txt_info
@@ -269,7 +310,7 @@ namespace KRFrameViewer
             this.txt_info.Location = new System.Drawing.Point(390, 169);
             this.txt_info.Name = "txt_info";
             this.txt_info.ReadOnly = true;
-            this.txt_info.Size = new System.Drawing.Size(183, 226);
+            this.txt_info.Size = new System.Drawing.Size(185, 278);
             this.txt_info.TabIndex = 7;
             this.txt_info.Text = "";
             // 
@@ -295,11 +336,11 @@ namespace KRFrameViewer
             this.toolStripContainer1.ContentPanel.Controls.Add(this.label1);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.colorTableFrame);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.tree_frames);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(639, 457);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(641, 509);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
             this.toolStripContainer1.Name = "toolStripContainer1";
-            this.toolStripContainer1.Size = new System.Drawing.Size(639, 482);
+            this.toolStripContainer1.Size = new System.Drawing.Size(641, 534);
             this.toolStripContainer1.TabIndex = 10;
             this.toolStripContainer1.Text = "toolStripContainer1";
             // 
@@ -342,7 +383,7 @@ namespace KRFrameViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(639, 482);
+            this.ClientSize = new System.Drawing.Size(641, 534);
             this.Controls.Add(this.toolStripContainer1);
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(549, 503);
@@ -376,58 +417,70 @@ namespace KRFrameViewer
 		{
 			if (openFileDialog1.ShowDialog() == DialogResult.OK)
 			{
-				Clear();
-				using (var fileStream = new FileStream(openFileDialog1.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+				//Clear();
+				foreach (String file in openFileDialog1.FileNames)
 				{
-					using (BinaryReader binaryReader = new BinaryReader(fileStream))
+
+					using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 					{
-						if (!ReadHeader(binaryReader))
+						using (BinaryReader binaryReader = new BinaryReader(fileStream))
 						{
-							statusBar.Text = "Invalid file.";
+							if (!ReadHeader(binaryReader))
+							{
+								statusBar.Text = "Invalid file.";
+							}
+							else
+							{
+								ReadColors(binaryReader);
+								ReadFrames(binaryReader);
+								ReadPixels(binaryReader);
+								
+								TreeNode parentNode = new TreeNode();
+								parentNode.Text = file;
+								tree_frames.Nodes.Add(parentNode);
+
+								for (var f = 0; f < this.m_FrameCount; f++)
+								{
+									TreeNode childNode = new TreeNode()
+									{
+										Tag = this.m_Frames[f]
+									};
+									ushort frame = this.m_Frames[f].Frame;
+									childNode.Text = frame.ToString();
+									parentNode.Nodes.Add(childNode);
+								}
+							}
 						}
-						else
-						{
-							ReadColors(binaryReader);
-							ReadFrames(binaryReader);
-							ReadPixels(binaryReader);
-						}
 					}
+
+
 				}
 
 
-                //Creates a color strip
-				Bitmap colorBarBitmap = new Bitmap((int)m_ColorCount + 100, 100);
-				var num = 0;
-				for (var x = 0; x < this.m_Colours.Count; x++)
-				{
-					Color pixel = this.m_Colours[x].Pixel;
-					if (x % 32 == 0)
-					{
-						num += 10;
-					}
-					for (var y = 0; y < 100; y++)
-					{
-						colorBarBitmap.SetPixel(x + num, y, pixel);
-					}
-					colorBarBitmap.SetPixel(x + num, 100, Color.Black);
-				}
+				//Bitmap colorImgBmp = new Bitmap((int)(this.m_ColorCount + 100), 101);
+				//int num = 0;
+				//for (int i = 0; i < this.m_Colours.Count; i++)
+				//{
+				//	Color pixel = this.m_Colours[i].Pixel;
+				//	if (i % 32 == 0)
+				//	{
+				//		num += 10;
+				//	}
+				//	for (int j = 0; j < 100; j++)
+				//	{
+				//		colorImgBmp.SetPixel(i + num, j, pixel);
+				//	}
+				//	colorImgBmp.SetPixel(i + num, 100, Color.Black);
+				//}
 
-				PictureBox size = this.colorTableFrame;
-				Size size1 = this.colorTableFrame.Size;
+				//PictureBox size = this.colorTableFrame;
+				//Size size1 = this.colorTableFrame.Size;
 
-				size.Size = new System.Drawing.Size((int)(this.m_ColorCount + 100), size1.Height);
-				this.colorTableFrame.Image = colorBarBitmap;
+				//size.Size = new System.Drawing.Size((int)(this.m_ColorCount + 100), size1.Height);
+				//this.colorTableFrame.Image = colorImgBmp;
 
-				for (var f = 0; f < this.m_FrameCount; f++)
-                {
-                    TreeNode treeNode = new TreeNode()
-                    {
-                        Tag = this.m_Frames[f]
-                    };
-					ushort frame = this.m_Frames[f].Frame;
-					treeNode.Text = frame.ToString();
-					this.tree_frames.Nodes.Add(treeNode);
-				}
+
+	
 			}
 		}
 
@@ -445,9 +498,10 @@ namespace KRFrameViewer
 
         private void tree_frames_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            e.Node.BackColor = Color.LightGray;
-            this.ChangeFrame(e.Node);
-        }
+			e.Node.BackColor = Color.LightGray;
+			this.ChangeFrame(e.Node);
+
+		}
 
         private void tree_frames_BeforeSelect(object sender, TreeViewCancelEventArgs e)
         {
@@ -459,7 +513,7 @@ namespace KRFrameViewer
 
         private void tree_frames_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            this.ChangeFrame(e.Node);
+            //this.ChangeFrame(e.Node);
         }
 
 
@@ -470,13 +524,12 @@ namespace KRFrameViewer
 
 		private void ChangeFrame(TreeNode node)
 		{
+
 			this.statusBar.Text = string.Concat("Node Selected: ", node.Text);
 			this.tree_frames.SelectedNode = node;
-
-
+			
 			FrameEntry currentFrame = (FrameEntry)node.Tag;
 			Bitmap frameImage = this.LoadFrameImage(currentFrame);
-
 
 			//TODO:Make this a unique method that takes the node as a param and returns a bitmap
 			//The total size of the frame image
@@ -534,7 +587,8 @@ namespace KRFrameViewer
         {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append(string.Concat("Animation ID: ", this.m_ID, "\n\n"));
-            stringBuilder.Append(string.Concat("Version: ", this.m_Version, "\n"));
+			stringBuilder.Append(string.Concat("Length: ", this.m_Length, "\n\n"));
+			stringBuilder.Append(string.Concat("Version: ", this.m_Version, "\n"));
             stringBuilder.Append(string.Concat("ColourCount: ", this.m_ColorCount, "\n"));
             stringBuilder.Append(string.Concat("ColourOffset: ", this.mColorAddress, "\n"));
             stringBuilder.Append(string.Concat("FramesCount: ", this.m_FrameCount, "\n"));
@@ -545,15 +599,16 @@ namespace KRFrameViewer
                 "\tMainEndY: ", this.m_EndCoordsY, "\n\n"
             };
             stringBuilder.Append(string.Concat(mInitCoordsX));
-            object[] initCoordsX = {"X:\t", tag.InitCoordsX, " ->\t", tag.EndCoordsX, "\n"};
+            object[] initCoordsX = {"Initial X:\t", tag.InitCoordsX, " End X:\t", tag.EndCoordsX, "\n"};
             stringBuilder.Append(string.Concat(initCoordsX));
-            object[] initCoordsY = {"Y:\t", tag.InitCoordsY, " ->\t", tag.EndCoordsY, "\n"};
+            object[] initCoordsY = {"Initial Y:\t", tag.InitCoordsY, " End Y:\t", tag.EndCoordsY, "\n"};
             stringBuilder.Append(string.Concat(initCoordsY));
             object[] objArray = {"\nWidth: ", tag.Width, " Height: ", tag.Height};
             stringBuilder.Append(string.Concat(objArray));
             stringBuilder.Append(string.Concat("\n\nSize: ", tag.Width * tag.Height));
             this.txt_info.Text = string.Concat(stringBuilder.ToString(), "\nOffset: ", tag.DataOffset);
-        }
+
+		}
 
         private void Clear()
 		{
@@ -764,33 +819,39 @@ namespace KRFrameViewer
 		{
 			for (int i = 0; i < this.tree_frames.Nodes.Count; i++)
 			{
+
 				this.worker.ReportProgress(i);
 				Bitmap bitmap = this.LoadFrameImage((FrameEntry)this.tree_frames.Nodes[i].Tag);
 				bitmap.Save(string.Format("{0}\\{1}.bmp", this.m_ExtractionFolder, this.tree_frames.Nodes[i].Text), ImageFormat.Bmp);
+				var centerX = Math.Abs(bitmap.Width/2);//Width/2 + 1 if odd
+				var centerY = Math.Abs(bitmap.Height/4) * -1;//Height/4 + 1 if odd
 
-                if (File.Exists(@"c:\temp\liste.txt"))
+				if (File.Exists(@"c:\temp\liste.txt"))
                 {
                     using (StreamWriter sw = File.AppendText(@"c:\temp\liste.txt"))
-                    {
-                        sw.WriteLine("Number: {0}", i.ToString());
-                        sw.WriteLine("CenterX:x");
-                        sw.WriteLine("CenterY:y ");
-                    }
+					{
+						WriteFrameInfo(i, centerX, centerY, sw);
+					}
 				}
                 else
 				{ 
 					using (StreamWriter sw = File.CreateText(@"c:\temp\liste.txt"))
 
 					{
-						sw.WriteLine("Number: {0}", i.ToString());
-						sw.WriteLine("CenterX:x");
-						sw.WriteLine("CenterY:y ");
+						WriteFrameInfo(i, centerX, centerY, sw);
 					}
 				}
 
 
 
 			}
+		}
+
+		private static void WriteFrameInfo(int i, int centerX, int centerY, StreamWriter sw)
+		{
+			sw.WriteLine("{0}", i.ToString().PadLeft(2, '0')[0] + ":" + i.ToString().PadLeft(2, '0')[1]);
+			sw.WriteLine("CenterX: {0}", centerX.ToString());
+			sw.WriteLine("CenterY: {0}", centerY.ToString());
 		}
 
 		private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
