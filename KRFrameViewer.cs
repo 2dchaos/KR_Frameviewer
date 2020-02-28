@@ -477,6 +477,7 @@ namespace KRFrameViewer
 			if (this.folderBrowserDialog1.ShowDialog() == DialogResult.OK)
 			{
 				this.m_ExtractionFolder = this.folderBrowserDialog1.SelectedPath;
+                //MessageBox.Show("Selected folder is:" + m_ExtractionFolder);
 				this.worker.RunWorkerAsync();
 			}
 			this.pBar.Maximum = this.tree_frames.Nodes.Count;
@@ -813,17 +814,19 @@ namespace KRFrameViewer
 				bitmap.Save(string.Format("{0}\\{1}.bmp", this.m_ExtractionFolder, i.ToString().PadLeft(2, '0')[0] + "_" + i.ToString().PadLeft(2, '0')[1]), ImageFormat.Bmp);
 				var centerX = Math.Abs(bitmap.Width/2);//Width/2 + 1 if odd
 				var centerY = Math.Abs(bitmap.Height/4) * -1;//Height/4 + 1 if odd
+                var listeFilePath = Path.Combine(m_ExtractionFolder,"liste.txt");
 
-				if (File.Exists(@"c:\temp\liste.txt"))
+
+				if (File.Exists(listeFilePath))
                 {
-                    using (StreamWriter sw = File.AppendText(@"c:\temp\liste.txt"))
+                    using (StreamWriter sw = File.AppendText(listeFilePath))
 					{
 						WriteFrameInfo(i, centerX, centerY, sw);
 					}
 				}
                 else
 				{ 
-					using (StreamWriter sw = File.CreateText(@"c:\temp\liste.txt"))
+					using (StreamWriter sw = File.CreateText(listeFilePath))
 
 					{
 						WriteFrameInfo(i, centerX, centerY, sw);
