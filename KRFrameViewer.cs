@@ -811,8 +811,8 @@ namespace KRFrameViewer
 				this.worker.ReportProgress(i);
 				Bitmap bitmap = this.LoadFrameImage((FrameEntry)this.tree_frames.Nodes[i].Tag);
 				bitmap.Save(string.Format("{0}\\{1}.bmp", this.m_ExtractionFolder, i.ToString().PadLeft(2, '0')[0] + "_" + i.ToString().PadLeft(2, '0')[1]), ImageFormat.Bmp);
-				var centerX = Math.Abs(bitmap.Width/2);//Width/2 + 1 if odd
-				var centerY = Math.Abs(bitmap.Height/4) * -1;//Height/4 + 1 if odd
+				var centerX = Math.Abs(bitmap.Width/2);//Width/2 + mysterious offset? (Perhaps endX - startX)
+				var centerY = Math.Abs(bitmap.Height/2) * -1;//Height/2(the center) + mysterious offset
                 var listeFilePath = Path.Combine(m_ExtractionFolder,"liste.txt");
 
 
