@@ -416,71 +416,59 @@ namespace KRFrameViewer
 		private void OpenButtonClick(object sender, EventArgs e)
 		{
 			if (openFileDialog1.ShowDialog() == DialogResult.OK)
-			{
-				//Clear();
-				foreach (String file in openFileDialog1.FileNames)
-				{
+            {
+                this.Clear();
 
-					using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-					{
-						using (BinaryReader binaryReader = new BinaryReader(fileStream))
-						{
-							if (!ReadHeader(binaryReader))
-							{
-								statusBar.Text = "Invalid file.";
-							}
-							else
-							{
-								ReadColors(binaryReader);
-								ReadFrames(binaryReader);
-								ReadPixels(binaryReader);
-								
-								TreeNode parentNode = new TreeNode();
-								parentNode.Text = file;
-								tree_frames.Nodes.Add(parentNode);
+			    using (var fileStream = new FileStream(this.openFileDialog1.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+			    {
+				    using (BinaryReader binaryReader = new BinaryReader(fileStream))
+				    {
+					    if (!ReadHeader(binaryReader))
+					    {
+						    statusBar.Text = "Invalid file.";
+					    }
+					    else
+					    {
+						    ReadColors(binaryReader);
+						    ReadFrames(binaryReader);
+						    ReadPixels(binaryReader);
+                        }
+				    }
+			    }
 
-								for (var f = 0; f < this.m_FrameCount; f++)
-								{
-									TreeNode childNode = new TreeNode()
-									{
-										Tag = this.m_Frames[f]
-									};
-									ushort frame = this.m_Frames[f].Frame;
-									childNode.Text = frame.ToString();
-									parentNode.Nodes.Add(childNode);
-								}
-							}
-						}
-					}
+			    Bitmap colorImgBmp = new Bitmap((int)(this.m_ColorCount + 100), 101);
+			    int num = 0;
+			    for (int i = 0; i < this.m_Colours.Count; i++)
+			    {
+				    Color pixel = this.m_Colours[i].Pixel;
+				    if (i % 32 == 0)
+				    {
+					    num += 10;
+				    }
+				    for (int j = 0; j < 100; j++)
+				    {
+					    colorImgBmp.SetPixel(i + num, j, pixel);
+				    }
+				    colorImgBmp.SetPixel(i + num, 100, Color.Black);
+			    }
 
+				PictureBox size = this.colorTableFrame;
+				Size size1 = this.colorTableFrame.Size;
 
-				}
+				size.Size = new System.Drawing.Size((int)(this.m_ColorCount + 100), size1.Height);
+				this.colorTableFrame.Image = colorImgBmp;
 
+				for (var f = 0; f < this.m_FrameCount; f++)
+                {
+                    TreeNode childNode = new TreeNode()
+                    {
+                        Tag = this.m_Frames[f]
+                    };
+                    ushort frame = this.m_Frames[f].Frame;
+                    childNode.Text = frame.ToString();
+                    tree_frames.Nodes.Add(childNode);
+                }
 
-				//Bitmap colorImgBmp = new Bitmap((int)(this.m_ColorCount + 100), 101);
-				//int num = 0;
-				//for (int i = 0; i < this.m_Colours.Count; i++)
-				//{
-				//	Color pixel = this.m_Colours[i].Pixel;
-				//	if (i % 32 == 0)
-				//	{
-				//		num += 10;
-				//	}
-				//	for (int j = 0; j < 100; j++)
-				//	{
-				//		colorImgBmp.SetPixel(i + num, j, pixel);
-				//	}
-				//	colorImgBmp.SetPixel(i + num, 100, Color.Black);
-				//}
-
-				//PictureBox size = this.colorTableFrame;
-				//Size size1 = this.colorTableFrame.Size;
-
-				//size.Size = new System.Drawing.Size((int)(this.m_ColorCount + 100), size1.Height);
-				//this.colorTableFrame.Image = colorImgBmp;
-
-
-	
 			}
 		}
 
@@ -513,8 +501,8 @@ namespace KRFrameViewer
 
         private void tree_frames_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            //this.ChangeFrame(e.Node);
-        }
+			this.ChangeFrame(e.Node);
+		}
 
 
 		//TODO: Save the image together with the background for the Gump
@@ -822,7 +810,7 @@ namespace KRFrameViewer
 
 				this.worker.ReportProgress(i);
 				Bitmap bitmap = this.LoadFrameImage((FrameEntry)this.tree_frames.Nodes[i].Tag);
-				bitmap.Save(string.Format("{0}\\{1}.bmp", this.m_ExtractionFolder, this.tree_frames.Nodes[i].Text), ImageFormat.Bmp);
+				bitmap.Save(string.Format("{0}\\{1}.bmp", this.m_ExtractionFolder, i.ToString().PadLeft(2, '0')[0] + "_" + i.ToString().PadLeft(2, '0')[1]), ImageFormat.Bmp);
 				var centerX = Math.Abs(bitmap.Width/2);//Width/2 + 1 if odd
 				var centerY = Math.Abs(bitmap.Height/4) * -1;//Height/4 + 1 if odd
 
@@ -841,10 +829,7 @@ namespace KRFrameViewer
 						WriteFrameInfo(i, centerX, centerY, sw);
 					}
 				}
-
-
-
-			}
+            }
 		}
 
 		private static void WriteFrameInfo(int i, int centerX, int centerY, StreamWriter sw)
