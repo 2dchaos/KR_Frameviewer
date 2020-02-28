@@ -7,7 +7,6 @@ using System.IO;
 using System.Text;
 using System.Windows.Forms;
 
-
 //Animation Frame File Format(.BIN)
 //---------------------------------
 
@@ -97,7 +96,10 @@ namespace KRFrameViewer
 		private byte[] _ImageData;
 
 		private long _ImageDataOffset;
-		private OpenFileDialog openFileDialog1;
+
+        private string m_ExtractionFolder;
+
+        private OpenFileDialog openFileDialog1;
 		private TreeView tree_frames;
 		private PictureBox colorTableFrame;
 		private Label label1;
@@ -114,15 +116,17 @@ namespace KRFrameViewer
 		private ToolStripPanel RightToolStripPanel;
 		private ToolStripPanel LeftToolStripPanel;
 		private ToolStripContentPanel ContentPanel;
-		private ToolStripButton exportButton;
-		private string m_ExtractionFolder;
-		
-		protected override void Dispose(bool disposing)
+        private PictureBox overImage;
+        private ToolStripButton exportButton;
+
+        protected override void Dispose(bool disposing)
 		{
 			if (disposing && this.components != null)
 			{
 				this.components.Dispose();
 			}
+
+            
 			base.Dispose(disposing);
 		}
 
@@ -153,11 +157,13 @@ namespace KRFrameViewer
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.openButton = new System.Windows.Forms.ToolStripButton();
             this.exportButton = new System.Windows.Forms.ToolStripButton();
+            this.overImage = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.colorTableFrame)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.mainImageFrame)).BeginInit();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.overImage)).BeginInit();
             this.SuspendLayout();
             // 
             // btn_openToolStrip
@@ -249,7 +255,7 @@ namespace KRFrameViewer
             | System.Windows.Forms.AnchorStyles.Left)));
             this.tree_frames.Location = new System.Drawing.Point(12, 42);
             this.tree_frames.Name = "tree_frames";
-            this.tree_frames.Size = new System.Drawing.Size(96, 477);
+            this.tree_frames.Size = new System.Drawing.Size(96, 416);
             this.tree_frames.TabIndex = 1;
             this.tree_frames.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.tree_frames_BeforeSelect);
             this.tree_frames.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tree_frames_AfterSelect);
@@ -275,11 +281,13 @@ namespace KRFrameViewer
             // 
             // mainImageFrame
             // 
-            this.mainImageFrame.BackColor = System.Drawing.Color.AliceBlue;
+            this.mainImageFrame.BackColor = System.Drawing.Color.DimGray;
+            this.mainImageFrame.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.mainImageFrame.InitialImage = null;
             this.mainImageFrame.Location = new System.Drawing.Point(114, 169);
-            this.mainImageFrame.MinimumSize = new System.Drawing.Size(270, 270);
+            this.mainImageFrame.MinimumSize = new System.Drawing.Size(300, 300);
             this.mainImageFrame.Name = "mainImageFrame";
-            this.mainImageFrame.Size = new System.Drawing.Size(270, 270);
+            this.mainImageFrame.Size = new System.Drawing.Size(300, 300);
             this.mainImageFrame.TabIndex = 4;
             this.mainImageFrame.TabStop = false;
             this.mainImageFrame.WaitOnLoad = true;
@@ -296,7 +304,7 @@ namespace KRFrameViewer
             // statusBar
             // 
             this.statusBar.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.statusBar.Location = new System.Drawing.Point(0, 489);
+            this.statusBar.Location = new System.Drawing.Point(0, 514);
             this.statusBar.Name = "statusBar";
             this.statusBar.ReadOnly = true;
             this.statusBar.Size = new System.Drawing.Size(641, 20);
@@ -307,10 +315,11 @@ namespace KRFrameViewer
             this.txt_info.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txt_info.Location = new System.Drawing.Point(390, 169);
+            this.txt_info.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_info.Location = new System.Drawing.Point(420, 169);
             this.txt_info.Name = "txt_info";
             this.txt_info.ReadOnly = true;
-            this.txt_info.Size = new System.Drawing.Size(185, 278);
+            this.txt_info.Size = new System.Drawing.Size(199, 217);
             this.txt_info.TabIndex = 7;
             this.txt_info.Text = "";
             // 
@@ -327,6 +336,7 @@ namespace KRFrameViewer
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.AutoScroll = true;
+            this.toolStripContainer1.ContentPanel.Controls.Add(this.overImage);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.toolStrip1);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.pBar);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.txt_info);
@@ -336,7 +346,7 @@ namespace KRFrameViewer
             this.toolStripContainer1.ContentPanel.Controls.Add(this.label1);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.colorTableFrame);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.tree_frames);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(641, 509);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(641, 534);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
             this.toolStripContainer1.Name = "toolStripContainer1";
@@ -379,6 +389,20 @@ namespace KRFrameViewer
             this.exportButton.ToolTipText = "Export";
             this.exportButton.Click += new System.EventHandler(this.exportButton_Click);
             // 
+            // overImage
+            // 
+            this.overImage.BackColor = System.Drawing.Color.Transparent;
+            this.overImage.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.overImage.Image = ((System.Drawing.Image)(resources.GetObject("overImage.Image")));
+            this.overImage.InitialImage = null;
+            this.overImage.Location = new System.Drawing.Point(114, 169);
+            this.overImage.MinimumSize = new System.Drawing.Size(300, 300);
+            this.overImage.Name = "overImage";
+            this.overImage.Size = new System.Drawing.Size(300, 300);
+            this.overImage.TabIndex = 10;
+            this.overImage.TabStop = false;
+            this.overImage.WaitOnLoad = true;
+            // 
             // KRFrameViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -398,6 +422,7 @@ namespace KRFrameViewer
             this.toolStripContainer1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.overImage)).EndInit();
             this.ResumeLayout(false);
 
 		}
@@ -406,7 +431,10 @@ namespace KRFrameViewer
 			this.InitializeComponent();
 			this.m_Colours = new List<ColorEntry>();
 			this.m_Frames = new List<FrameEntry>();
-		}
+            overImage.Parent = mainImageFrame;
+            overImage.BackColor = Color.Transparent;
+            overImage.Location = new Point(0, 0);
+        }
 
 		private void AboutButtonClick(object sender, EventArgs e)
 		{
@@ -419,7 +447,7 @@ namespace KRFrameViewer
             {
                 this.Clear();
 
-			    using (var fileStream = new FileStream(this.openFileDialog1.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var fileStream = new FileStream(this.openFileDialog1.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 			    {
 				    using (BinaryReader binaryReader = new BinaryReader(fileStream))
 				    {
@@ -435,42 +463,71 @@ namespace KRFrameViewer
                         }
 				    }
 			    }
+                this.colorTableFrame.Image = CreateColorBarBitmap();
+                CreateTreeNode();
 
-			    Bitmap colorImgBmp = new Bitmap((int)(this.m_ColorCount + 100), 101);
-			    int num = 0;
-			    for (int i = 0; i < this.m_Colours.Count; i++)
-			    {
-				    Color pixel = this.m_Colours[i].Pixel;
-				    if (i % 32 == 0)
-				    {
-					    num += 10;
-				    }
-				    for (int j = 0; j < 100; j++)
-				    {
-					    colorImgBmp.SetPixel(i + num, j, pixel);
-				    }
-				    colorImgBmp.SetPixel(i + num, 100, Color.Black);
-			    }
+            }
+		}
 
-				PictureBox size = this.colorTableFrame;
-				Size size1 = this.colorTableFrame.Size;
-
-				size.Size = new System.Drawing.Size((int)(this.m_ColorCount + 100), size1.Height);
-				this.colorTableFrame.Image = colorImgBmp;
-
-				for (var f = 0; f < this.m_FrameCount; f++)
+        private void CreateTreeNode()
+        {
+            for (var f = 0; f < this.m_FrameCount; f++)
+            {
+                TreeNode childNode = new TreeNode()
                 {
-                    TreeNode childNode = new TreeNode()
-                    {
-                        Tag = this.m_Frames[f]
-                    };
-                    ushort frame = this.m_Frames[f].Frame;
-                    childNode.Text = frame.ToString();
-                    tree_frames.Nodes.Add(childNode);
+                    Tag = this.m_Frames[f]
+                };
+                ushort frame = this.m_Frames[f].Frame;
+                childNode.Text = frame.ToString();
+                tree_frames.Nodes.Add(childNode);
+            }
+        }
+        private void tree_frames_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            e.Node.BackColor = Color.LightGray;
+            this.ChangeFrame(e.Node);
+
+        }
+        private void tree_frames_BeforeSelect(object sender, TreeViewCancelEventArgs e)
+        {
+            if (this.tree_frames.SelectedNode != null)
+            {
+                this.tree_frames.SelectedNode.BackColor = Color.Transparent;
+            }
+        }
+        private void tree_frames_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            this.ChangeFrame(e.Node);
+
+        }
+        private Bitmap CreateColorBarBitmap()
+        {
+            Bitmap colorImgBmp = new Bitmap((int) (this.m_ColorCount + 100), 101);
+
+            int num = 0;
+            for (int i = 0; i < this.m_Colours.Count; i++)
+            {
+                Color pixel = this.m_Colours[i].Pixel;
+                if (i % 32 == 0)
+                {
+                    num += 10;
                 }
 
-			}
-		}
+                for (int j = 0; j < 100; j++)
+                {
+                    colorImgBmp.SetPixel(i + num, j, pixel);
+                }
+
+                colorImgBmp.SetPixel(i + num, 100, Color.Black);
+            }
+
+            PictureBox size = this.colorTableFrame;
+            Size size1 = this.colorTableFrame.Size;
+
+            size.Size = new System.Drawing.Size((int)(this.m_ColorCount + 100), size1.Height);
+
+			return colorImgBmp;
+        }
 
         private void exportButton_Click(object sender, EventArgs e)
 		{
@@ -483,46 +540,26 @@ namespace KRFrameViewer
 			this.pBar.Minimum = 0;
 			this.pBar.Value = 0;
 		}
-
-        private void tree_frames_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-			e.Node.BackColor = Color.LightGray;
-			this.ChangeFrame(e.Node);
-
-		}
-
-        private void tree_frames_BeforeSelect(object sender, TreeViewCancelEventArgs e)
-        {
-            if (this.tree_frames.SelectedNode != null)
-            {
-                this.tree_frames.SelectedNode.BackColor = Color.Transparent;
-            }
-        }
-
-        private void tree_frames_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-        {
-			this.ChangeFrame(e.Node);
-		}
-
-
+        
 		//TODO: Save the image together with the background for the Gump
         //TODO: Make it so it's possible to open more than one bin file at a time.
 		//TODO: Make it so it's possible to open a entire folder full of subfolders inside
 		//TODO: Export to .vd directly
 
 		private void ChangeFrame(TreeNode node)
-		{
-
-			this.statusBar.Text = string.Concat("Node Selected: ", node.Text);
+        {
+            //TODO:Make this a unique method that takes the node as a param and returns a bitmap
+            //The total size of the frame image
+            var backgroundImgWidth = Math.Abs(this.m_EndCoordsX - this.m_InitCoordsX);
+            var backgroundImgHeight = Math.Abs(this.m_EndCoordsY - this.m_InitCoordsY);
+            this.statusBar.Text = "Distance X: " + backgroundImgWidth + "Distance Y: " + backgroundImgHeight;
 			this.tree_frames.SelectedNode = node;
 			
 			FrameEntry currentFrame = (FrameEntry)node.Tag;
 			Bitmap frameImage = this.LoadFrameImage(currentFrame);
 
-			//TODO:Make this a unique method that takes the node as a param and returns a bitmap
-			//The total size of the frame image
-			int backgroundImgWidth = Math.Abs(this.m_EndCoordsX - this.m_InitCoordsX);
-			int backgroundImgHeight = Math.Abs(this.m_EndCoordsY - this.m_InitCoordsY);
+	
+
 			Bitmap backgroundImage = new Bitmap(backgroundImgWidth, backgroundImgHeight);
 
 			//Draws the background based on the offset provided by the data
@@ -530,7 +567,7 @@ namespace KRFrameViewer
 			{
 				for (int y = 0; y < backgroundImgHeight; y++)
 				{
-					backgroundImage.SetPixel(x, y, Color.White);
+					backgroundImage.SetPixel(x, y, Color.Black);
 				}
 			}
 
@@ -565,7 +602,10 @@ namespace KRFrameViewer
 			}
 
 			this.mainImageFrame.BackgroundImageLayout = ImageLayout.Center;
-			this.mainImageFrame.BackgroundImage = backgroundImage;
+			this.mainImageFrame.BackgroundImage= backgroundImage;
+
+
+
 
 			//Show the header info on the right panel
 			ShowFrameInfo(currentFrame);
@@ -595,14 +635,19 @@ namespace KRFrameViewer
             stringBuilder.Append(string.Concat(objArray));
             stringBuilder.Append(string.Concat("\n\nSize: ", tag.Width * tag.Height));
             this.txt_info.Text = string.Concat(stringBuilder.ToString(), "\nOffset: ", tag.DataOffset);
+        }
 
-		}
+        private int GetFrameY(FrameEntry tag)
+        {
+            return tag.EndCoordsY;
+
+        }
 
         private void Clear()
 		{
-			base.Size = this.MinimumSize;
-			this.mainImageFrame.Size = this.mainImageFrame.MinimumSize;
-			this.txt_info.Location = new Point(388, 168);
+			//base.Size = this.MinimumSize;
+			//this.mainImageFrame.Size = this.mainImageFrame.MinimumSize;
+			//this.txt_info.Location = new Point(388, 168);
 			this.mColorAddress = 0;
 			this.m_ColorCount = 0;
 			this.m_Colours.Clear();
@@ -639,10 +684,7 @@ namespace KRFrameViewer
 			return Color.FromArgb((int)num10);
 		}
 
-
-
-
-		//Inner image frame
+        //Inner image frame
 		public Bitmap LoadFrameImage(FrameEntry currentFrameEntry)
 		{
 			int x;
@@ -806,13 +848,14 @@ namespace KRFrameViewer
 		private void worker_DoWork(object sender, DoWorkEventArgs e)
 		{
 			for (int i = 0; i < this.tree_frames.Nodes.Count; i++)
-			{
-
+            {
+                int HALFTILE = 22;
 				this.worker.ReportProgress(i);
 				Bitmap bitmap = this.LoadFrameImage((FrameEntry)this.tree_frames.Nodes[i].Tag);
 				bitmap.Save(string.Format("{0}\\{1}.bmp", this.m_ExtractionFolder, i.ToString().PadLeft(2, '0')[0] + "_" + i.ToString().PadLeft(2, '0')[1]), ImageFormat.Bmp);
 				var centerX = Math.Abs(bitmap.Width/2);//Width/2 + mysterious offset? (Perhaps endX - startX)
-				var centerY = Math.Abs(bitmap.Height/2) * -1;//Height/2(the center) + mysterious offset
+                var currentFrame = (FrameEntry) this.tree_frames.Nodes[i].Tag;
+                var centerY = Math.Abs(GetFrameY(currentFrame)) - HALFTILE;//Math.Abs(EndY)-22
                 var listeFilePath = Path.Combine(m_ExtractionFolder,"liste.txt");
 
 
@@ -853,6 +896,7 @@ namespace KRFrameViewer
 		}
 
 
+        
 
 
     }
