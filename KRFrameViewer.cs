@@ -850,12 +850,12 @@ namespace KRFrameViewer
 			for (int i = 0; i < this.tree_frames.Nodes.Count; i++)
             {
                 int HALFTILE = 22;
-				this.worker.ReportProgress(i);
+                var currentFrame = (FrameEntry)this.tree_frames.Nodes[i].Tag;
+                this.worker.ReportProgress(i);
 				Bitmap bitmap = this.LoadFrameImage((FrameEntry)this.tree_frames.Nodes[i].Tag);
 				bitmap.Save(string.Format("{0}\\{1}.bmp", this.m_ExtractionFolder, i.ToString().PadLeft(2, '0')[0] + "_" + i.ToString().PadLeft(2, '0')[1]), ImageFormat.Bmp);
-				var centerX = Math.Abs(bitmap.Width/2);//Width/2 + mysterious offset? (Perhaps endX - startX)
-                var currentFrame = (FrameEntry) this.tree_frames.Nodes[i].Tag;
-                var centerY = Math.Abs(GetFrameY(currentFrame)) - HALFTILE;//Math.Abs(EndY)-22
+                var centerX = currentFrame.InitCoordsX * -1;
+                var centerY = Math.Abs(GetFrameY(currentFrame)) - HALFTILE;
                 var listeFilePath = Path.Combine(m_ExtractionFolder,"liste.txt");
 
 
