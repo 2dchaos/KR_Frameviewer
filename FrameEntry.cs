@@ -4,7 +4,7 @@ namespace KRFrameViewer
 {
 	public class FrameEntry
 	{
-		private ushort m_ID;
+		private ushort _mid;
 
 		private ushort m_Frame;
 
@@ -66,7 +66,7 @@ namespace KRFrameViewer
 		{
 			get
 			{
-				return this.m_ID;
+				return this._mid;
 			}
 		}
 
@@ -96,7 +96,7 @@ namespace KRFrameViewer
 
 		public FrameEntry(ushort ID, ushort Frame, short initcoordsX, short InitCoordsY, short EndCoordsX, short EndcoordsY, uint DataOffset, uint Colournumber)
 		{
-			this.m_ID = ID;
+			this._mid = ID;
 			this.m_Frame = Frame;
 			this.m_InitCoordsX = initcoordsX;
 			this.m_InitCoordsY = InitCoordsY;

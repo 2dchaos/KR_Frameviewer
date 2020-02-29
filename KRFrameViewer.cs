@@ -67,7 +67,7 @@ namespace KRFrameViewer
 
 		private byte[] m_Head;
 
-		private uint m_Version;
+        private byte[] m_Version;
 
 		private uint m_Length;
 
@@ -118,6 +118,9 @@ namespace KRFrameViewer
 		private ToolStripContentPanel ContentPanel;
         private PictureBox overImage;
         private ToolStripButton exportButton;
+
+        private int animId = 0;
+        private int animFrame = 0;
 
         protected override void Dispose(bool disposing)
 		{
@@ -458,8 +461,8 @@ namespace KRFrameViewer
 					    else
 					    {
 						    ReadColors(binaryReader);
-						    ReadFrames(binaryReader);
-						    ReadPixels(binaryReader);
+                            ReadFrames(binaryReader);
+                            ReadPixels(binaryReader);
                         }
 				    }
 			    }
@@ -614,9 +617,9 @@ namespace KRFrameViewer
         private void ShowFrameInfo(FrameEntry tag)
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append(string.Concat("Animation ID: ", this.m_ID, "\n\n"));
+            stringBuilder.Append(string.Concat(Convert.ToChar(this.m_Head[0]), Convert.ToChar(this.m_Head[1]), Convert.ToChar(this.m_Head[2]), Convert.ToChar(this.m_Head[3]), "\n\n"));
 			stringBuilder.Append(string.Concat("Length: ", this.m_Length, "\n\n"));
-			stringBuilder.Append(string.Concat("Version: ", this.m_Version, "\n"));
+			stringBuilder.Append(string.Concat("Version: ", this.m_Version[0], "\n"));
             stringBuilder.Append(string.Concat("ColourCount: ", this.m_ColorCount, "\n"));
             stringBuilder.Append(string.Concat("ColourOffset: ", this.mColorAddress, "\n"));
             stringBuilder.Append(string.Concat("FramesCount: ", this.m_FrameCount, "\n"));
@@ -627,28 +630,22 @@ namespace KRFrameViewer
                 "\tMainEndY: ", this.m_EndCoordsY, "\n\n"
             };
             stringBuilder.Append(string.Concat(mInitCoordsX));
+
             object[] initCoordsX = {"Initial X:\t", tag.InitCoordsX, " End X:\t", tag.EndCoordsX, "\n"};
             stringBuilder.Append(string.Concat(initCoordsX));
-            object[] initCoordsY = {"Initial Y:\t", tag.InitCoordsY, " End Y:\t", tag.EndCoordsY, "\n"};
+            object[] initCoordsY = {"Initial Y:", tag.InitCoordsY, " End Y:\t", tag.EndCoordsY, "\n"};
             stringBuilder.Append(string.Concat(initCoordsY));
+            object[] frameAndID = { "Frame:", tag.Frame, " ID:\t", tag.ID, "\n" };
+            stringBuilder.Append(string.Concat(frameAndID));
             object[] objArray = {"\nWidth: ", tag.Width, " Height: ", tag.Height};
             stringBuilder.Append(string.Concat(objArray));
             stringBuilder.Append(string.Concat("\n\nSize: ", tag.Width * tag.Height));
             this.txt_info.Text = string.Concat(stringBuilder.ToString(), "\nOffset: ", tag.DataOffset);
         }
 
-        private int GetFrameY(FrameEntry tag)
-        {
-            return tag.EndCoordsY;
-
-        }
-
         private void Clear()
-		{
-			//base.Size = this.MinimumSize;
-			//this.mainImageFrame.Size = this.mainImageFrame.MinimumSize;
-			//this.txt_info.Location = new Point(388, 168);
-			this.mColorAddress = 0;
+        {
+            this.mColorAddress = 0;
 			this.m_ColorCount = 0;
 			this.m_Colours.Clear();
 			this.m_EndCoordsX = 0;
@@ -660,7 +657,7 @@ namespace KRFrameViewer
 			this.m_InitCoordsX = 0;
 			this.m_InitCoordsY = 0;
 			this.m_Length = 0;
-			this.m_Version = 0;
+			//this.m_Version = [];
 			this.tree_frames.Nodes.Clear();
 			this.colorTableFrame.Image = this.colorTableFrame.InitialImage;
 			this.mainImageFrame.BackgroundImage = null;
@@ -689,12 +686,12 @@ namespace KRFrameViewer
 		{
 			int x;
 			int y;
-			var frameWidth = Math.Abs(currentFrameEntry.EndCoordsX - currentFrameEntry.InitCoordsX);
-			var frameHeight = Math.Abs(currentFrameEntry.EndCoordsY - currentFrameEntry.InitCoordsY);
-			byte[] numArray = this._ImageData;
-			var frameImage = new Bitmap(frameWidth, frameHeight);
+            byte[] numArray = this._ImageData;
 
-			//Changes the alpha of the image and the background pixels to a color that will be combined later
+            var frameWidth = Math.Abs(currentFrameEntry.EndCoordsX - currentFrameEntry.InitCoordsX);
+            var frameHeight = Math.Abs(currentFrameEntry.EndCoordsY - currentFrameEntry.InitCoordsY);
+            var frameImage = new Bitmap(frameWidth, frameHeight);
+            //Changes the alpha of the image and the background pixels to a color that will be combined later
 			for (x = 0; x < frameWidth; x++)
 			{
 				for (y = 0; y < frameHeight; y++)
@@ -708,10 +705,10 @@ namespace KRFrameViewer
             x = 0;
 			y = 0;
 
-			//Draw and combine the background color with the image pixels, using the previous defined color
+            //Draw and combine the background color with the image pixels, using the previous defined color
             var dataOffset = (int)(currentFrameEntry.DataOffset - this._ImageDataOffset);
 
-			while (y < frameHeight)
+            while (y < frameHeight)
 			{
      
 				var num3 = dataOffset;
@@ -818,8 +815,9 @@ namespace KRFrameViewer
 			{
 				return false;
 			}
-			this.m_Version = reader.ReadUInt32();
-			this.m_Length = reader.ReadUInt32();
+
+            this.m_Version = reader.ReadBytes(4);
+            this.m_Length = reader.ReadUInt32();
 			this.m_ID = reader.ReadUInt32();
 			this.m_InitCoordsX = reader.ReadInt16();
 			this.m_InitCoordsY = reader.ReadInt16();
@@ -841,56 +839,69 @@ namespace KRFrameViewer
 			return true;
 		}
 
-
-
-		//TODO:Make it export either the current img with a liste.txt or a combined bmp file
-		//Export the image as a bmp
-		private void worker_DoWork(object sender, DoWorkEventArgs e)
+        //TODO:Make it export either the current img with a liste.txt or a combined bmp file
+        //Export the image as a bmp
+        private void worker_DoWork(object sender, DoWorkEventArgs e)
 		{
 			for (int i = 0; i < this.tree_frames.Nodes.Count; i++)
             {
                 int HALFTILE = 22;
                 var currentFrame = (FrameEntry)this.tree_frames.Nodes[i].Tag;
+                
+                var animFramesPerAnimation = m_FrameCount / 5;
                 this.worker.ReportProgress(i);
 				Bitmap bitmap = this.LoadFrameImage((FrameEntry)this.tree_frames.Nodes[i].Tag);
-				bitmap.Save(string.Format("{0}\\{1}.bmp", this.m_ExtractionFolder, i.ToString().PadLeft(2, '0')[0] + "_" + i.ToString().PadLeft(2, '0')[1]), ImageFormat.Bmp);
+
                 var centerX = currentFrame.InitCoordsX * -1;
-                var centerY = Math.Abs(GetFrameY(currentFrame)) - HALFTILE;
+                var centerY = Math.Abs(currentFrame.EndCoordsY) - HALFTILE;
                 var listeFilePath = Path.Combine(m_ExtractionFolder,"liste.txt");
+                bitmap.Save(string.Format("{0}\\{1}.bmp", this.m_ExtractionFolder, animId + "_" + animFrame, ImageFormat.Bmp));
 
+                animFrame++;
+                if (animFrame >= animFramesPerAnimation)
+                {
+                    animId++;
+                    animFrame = 0;
+                }
 
-				if (File.Exists(listeFilePath))
+                if (File.Exists(listeFilePath))
                 {
                     using (StreamWriter sw = File.AppendText(listeFilePath))
-					{
-						WriteFrameInfo(i, centerX, centerY, sw);
-					}
+                    {
+                        WriteListe(sw, animId, animFrame, centerX, centerY);
+                    }
 				}
                 else
 				{ 
 					using (StreamWriter sw = File.CreateText(listeFilePath))
 
 					{
-						WriteFrameInfo(i, centerX, centerY, sw);
-					}
+                        WriteListe(sw, animId, animFrame, centerX, centerY);
+                    }
 				}
+
+
+
             }
 		}
 
-		private static void WriteFrameInfo(int i, int centerX, int centerY, StreamWriter sw)
-		{
-			sw.WriteLine("{0}", i.ToString().PadLeft(2, '0')[0] + ":" + i.ToString().PadLeft(2, '0')[1]);
-			sw.WriteLine("CenterX: {0}", centerX.ToString());
-			sw.WriteLine("CenterY: {0}", centerY.ToString());
-		}
+        private static void WriteListe(StreamWriter sw, int animId, int animFrame, int centerX, int centerY)
+        {
+            sw.WriteLine("{0}", animId + ":" + animFrame);
+            sw.WriteLine("CenterX: {0}", centerX.ToString());
+            sw.WriteLine("CenterY: {0}", centerY.ToString());
+        }
 
-		private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+
+        private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
 		{
 			this.pBar.Value = e.ProgressPercentage;
 		}
 
 		private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-		{
+        {
+            animFrame = 0;
+            animId = 0;
 			this.pBar.Value = 0;
 			MessageBox.Show("Extraction completed.");
 		}

@@ -7,7 +7,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1EB60A44-52A8-46FE-A8BD-5C56FEED73C1}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		GraphicExtensions.cs = GraphicExtensions.cs
 	EndProjectSection
 EndProject
 Global
