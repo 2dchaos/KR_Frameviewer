@@ -359,13 +359,19 @@ namespace KRFrameViewer
             if(openFolderDialog.ShowDialog() == DialogResult.OK)
             {
                 statusBar.Text = this.openFolderDialog.SelectedPath;
-                DirectoryInfo selectedPath = new DirectoryInfo(openFolderDialog.SelectedPath);
-                FileInfo[] Files = selectedPath.GetFiles("*.bin");
-                int count = 0;
-                foreach(FileInfo file in Files)
+                var selectedPath = openFolderDialog.SelectedPath;
+                
+                var count = 0;
+                foreach(string file in Directory.EnumerateFiles(selectedPath,"*.bin"))
                 {
-                    count++;
-                    statusBar.Text = count.ToString();
+                    var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite); ;
+                    BinaryReader binaryReader = new BinaryReader(fileStream);
+                    if(ReadHeader(binaryReader))
+                    {
+                        count++;
+                        statusBar.Text = "Ok! " + count;
+                    }
+
                 }
 
             }
