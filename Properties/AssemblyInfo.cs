@@ -16,4 +16,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 [assembly: Debuggable(DebuggableAttribute.DebuggingModes.IgnoreSymbolStoreSequencePoints)]
 [assembly: Guid("5f60f8c4-e352-4b0f-8b8b-8a6ea917d0c0")]
-[assembly: RuntimeCompatibility(WrapNonExceptionThrows=true)]
+[assembly: RuntimeCompatibility(WrapNonExceptionThrows = true)]

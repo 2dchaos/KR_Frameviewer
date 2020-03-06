@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -50,162 +49,110 @@ using System.Windows.Forms;
 
 namespace KRFrameViewer
 {
-	public class KRFrameViewer : Form
-	{
-		private IContainer components;
+    public class KRFrameViewer : Form
+    {
+        private IContainer components;
 
-		private ToolStripButton btn_openToolStrip;
+        private BackgroundWorker worker;
 
-		private ToolStripButton btn_SaveToolstrip;
+        private FolderBrowserDialog exportFileDialog;
 
-		private ToolStripSeparator toolStripSeparator;
-
-		private ToolStripButton btn_about;
-
-		private BackgroundWorker worker;
-
-		private FolderBrowserDialog folderBrowseExport;
-
-		private byte[] m_Head;
+        private byte[] m_Head;
 
         private uint m_Version;
 
-		private uint m_Length;
+        private uint m_Length;
 
-		private uint m_ID;
+        private uint m_ID;
 
-		private short m_InitCoordsX;
+        private short m_InitCoordsX;
 
-		private short m_InitCoordsY;
+        private short m_InitCoordsY;
 
-		private short m_EndCoordsX;
+        private short m_EndCoordsX;
 
-		private short m_EndCoordsY;
+        private short m_EndCoordsY;
 
-		private uint m_ColorCount;
+        private uint m_ColorCount;
 
-		private uint m_ColorAddress;
+        private uint m_ColorAddress;
 
-		private uint m_FrameCount;
+        private uint m_FrameCount;
 
-		private uint m_FrameAddress;
+        private uint m_FrameAddress;
 
-		private List<ColorEntry> m_Colors;
+        private List<ColorEntry> m_Colors;
 
-		private List<FrameEntry> m_Frames;
+        private List<FrameEntry> m_Frames;
 
         private List<uint> m_colorList;
 
-		private byte[] _ImageData;
+        private byte[] _ImageData;
 
-		private long _ImageDataOffset;
+        private long _ImageDataOffset;
 
         private string m_ExtractionFolder;
 
         private OpenFileDialog openFileDialog;
-		private TreeView tree_frames;
-		private PictureBox colorTableFrame;
-		private Label label1;
-		private PictureBox mainImageFrame;
-		private Label label2;
-		private TextBox statusBar;
-		private RichTextBox txt_info;
-		private ProgressBar pBar;
-		private ToolStripContainer toolStripContainer1;
-		private ToolStrip toolStrip1;
-		private ToolStripButton openButton;
-		private ToolStripPanel BottomToolStripPanel;
-		private ToolStripPanel TopToolStripPanel;
-		private ToolStripPanel RightToolStripPanel;
-		private ToolStripPanel LeftToolStripPanel;
-		private ToolStripContentPanel ContentPanel;
-        private PictureBox overImage;
-        private ToolStripButton exportButton;
+        private TreeView treeFramesBox;
+        private PictureBox colorTableBox;
+        private PictureBox mainImageBox;
+        private TextBox statusBar;
+        private RichTextBox infoBox;
+        private ProgressBar progressBar;
+        private ToolStripContainer mainContainer;
+        private ToolStrip toolStrip;
+        private ToolStripPanel TopToolStripPanel;
+        private ToolStripContentPanel ContentPanel;
 
         private int animId = 0;
-        private ToolStripButton OpenFolder;
-        private FolderBrowserDialog folderBrowserOpen;
+        private ToolStripDropDownButton w;
+        private ToolStripMenuItem openFileMenuItem;
+        private ToolStripMenuItem openFolderFileMenuItem;
+        private ToolStripMenuItem exportMenuItem;
+        private ToolStripMenuItem exitFileMenuItem;
+        private FolderBrowserDialog openFolderDialog;
         private int animFrame = 0;
 
         protected override void Dispose(bool disposing)
-		{
-			if (disposing && this.components != null)
-			{
-				this.components.Dispose();
-			}
+        {
+            if (disposing && this.components != null)
+            {
+                this.components.Dispose();
+            }
 
-            
-			base.Dispose(disposing);
-		}
 
-		public void InitializeComponent()
-		{
+            base.Dispose(disposing);
+        }
+
+        public void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(KRFrameViewer));
-            this.btn_openToolStrip = new System.Windows.Forms.ToolStripButton();
-            this.btn_SaveToolstrip = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
-            this.btn_about = new System.Windows.Forms.ToolStripButton();
             this.worker = new System.ComponentModel.BackgroundWorker();
-            this.folderBrowseExport = new System.Windows.Forms.FolderBrowserDialog();
+            this.exportFileDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.BottomToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.TopToolStripPanel = new System.Windows.Forms.ToolStripPanel();
-            this.RightToolStripPanel = new System.Windows.Forms.ToolStripPanel();
-            this.LeftToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.ContentPanel = new System.Windows.Forms.ToolStripContentPanel();
-            this.tree_frames = new System.Windows.Forms.TreeView();
-            this.colorTableFrame = new System.Windows.Forms.PictureBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.mainImageFrame = new System.Windows.Forms.PictureBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.treeFramesBox = new System.Windows.Forms.TreeView();
+            this.colorTableBox = new System.Windows.Forms.PictureBox();
+            this.mainImageBox = new System.Windows.Forms.PictureBox();
             this.statusBar = new System.Windows.Forms.TextBox();
-            this.txt_info = new System.Windows.Forms.RichTextBox();
-            this.pBar = new System.Windows.Forms.ProgressBar();
-            this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
-            this.overImage = new System.Windows.Forms.PictureBox();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.openButton = new System.Windows.Forms.ToolStripButton();
-            this.exportButton = new System.Windows.Forms.ToolStripButton();
-            this.OpenFolder = new System.Windows.Forms.ToolStripButton();
-            this.folderBrowserOpen = new System.Windows.Forms.FolderBrowserDialog();
-            ((System.ComponentModel.ISupportInitialize)(this.colorTableFrame)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.mainImageFrame)).BeginInit();
-            this.toolStripContainer1.ContentPanel.SuspendLayout();
-            this.toolStripContainer1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.overImage)).BeginInit();
-            this.toolStrip1.SuspendLayout();
+            this.infoBox = new System.Windows.Forms.RichTextBox();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.mainContainer = new System.Windows.Forms.ToolStripContainer();
+            this.toolStrip = new System.Windows.Forms.ToolStrip();
+            this.w = new System.Windows.Forms.ToolStripDropDownButton();
+            this.openFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openFolderFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openFolderDialog = new System.Windows.Forms.FolderBrowserDialog();
+            ((System.ComponentModel.ISupportInitialize)(this.colorTableBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.mainImageBox)).BeginInit();
+            this.mainContainer.ContentPanel.SuspendLayout();
+            this.mainContainer.SuspendLayout();
+            this.toolStrip.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // btn_openToolStrip
-            // 
-            this.btn_openToolStrip.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_openToolStrip.Name = "btn_openToolStrip";
-            this.btn_openToolStrip.Size = new System.Drawing.Size(56, 22);
-            this.btn_openToolStrip.Text = "&Open";
-            this.btn_openToolStrip.Click += new System.EventHandler(this.OpenButtonClick);
-            // 
-            // btn_SaveToolstrip
-            // 
-            this.btn_SaveToolstrip.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_SaveToolstrip.Name = "btn_SaveToolstrip";
-            this.btn_SaveToolstrip.Size = new System.Drawing.Size(79, 22);
-            this.btn_SaveToolstrip.Text = "&Extract All";
-            this.btn_SaveToolstrip.Click += new System.EventHandler(this.exportButton_Click);
-            // 
-            // toolStripSeparator
-            // 
-            this.toolStripSeparator.Name = "toolStripSeparator";
-            this.toolStripSeparator.Size = new System.Drawing.Size(6, 25);
-            // 
-            // btn_about
-            // 
-            this.btn_about.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.btn_about.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btn_about.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btn_about.Name = "btn_about";
-            this.btn_about.Size = new System.Drawing.Size(23, 22);
-            this.btn_about.Text = "He&lp";
-            this.btn_about.Click += new System.EventHandler(this.AboutButtonClick);
             // 
             // worker
             // 
@@ -214,22 +161,14 @@ namespace KRFrameViewer
             this.worker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.worker_ProgressChanged);
             this.worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
             // 
-            // folderBrowseExport
+            // exportFileDialog
             // 
-            this.folderBrowseExport.RootFolder = System.Environment.SpecialFolder.MyComputer;
+            this.exportFileDialog.RootFolder = System.Environment.SpecialFolder.MyComputer;
             // 
             // openFileDialog
             // 
             this.openFileDialog.FileName = "openFileDialog";
             this.openFileDialog.Multiselect = true;
-            // 
-            // BottomToolStripPanel
-            // 
-            this.BottomToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.BottomToolStripPanel.Name = "BottomToolStripPanel";
-            this.BottomToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.BottomToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.BottomToolStripPanel.Size = new System.Drawing.Size(0, 0);
             // 
             // TopToolStripPanel
             // 
@@ -239,265 +178,221 @@ namespace KRFrameViewer
             this.TopToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.TopToolStripPanel.Size = new System.Drawing.Size(0, 0);
             // 
-            // RightToolStripPanel
-            // 
-            this.RightToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.RightToolStripPanel.Name = "RightToolStripPanel";
-            this.RightToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.RightToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.RightToolStripPanel.Size = new System.Drawing.Size(0, 0);
-            // 
-            // LeftToolStripPanel
-            // 
-            this.LeftToolStripPanel.Location = new System.Drawing.Point(0, 0);
-            this.LeftToolStripPanel.Name = "LeftToolStripPanel";
-            this.LeftToolStripPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.LeftToolStripPanel.RowMargin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.LeftToolStripPanel.Size = new System.Drawing.Size(0, 0);
-            // 
             // ContentPanel
             // 
             this.ContentPanel.Size = new System.Drawing.Size(150, 3);
             // 
-            // tree_frames
+            // treeFramesBox
             // 
-            this.tree_frames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.treeFramesBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.tree_frames.Location = new System.Drawing.Point(12, 42);
-            this.tree_frames.Name = "tree_frames";
-            this.tree_frames.Size = new System.Drawing.Size(96, 452);
-            this.tree_frames.TabIndex = 1;
-            this.tree_frames.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.tree_frames_BeforeSelect);
-            this.tree_frames.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tree_frames_AfterSelect);
-            this.tree_frames.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tree_frames_NodeMouseClick);
+            this.treeFramesBox.Location = new System.Drawing.Point(12, 42);
+            this.treeFramesBox.Name = "treeFramesBox";
+            this.treeFramesBox.Size = new System.Drawing.Size(96, 406);
+            this.treeFramesBox.TabIndex = 1;
+            this.treeFramesBox.BeforeSelect += new System.Windows.Forms.TreeViewCancelEventHandler(this.tree_frames_BeforeSelect);
+            this.treeFramesBox.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.tree_frames_AfterSelect);
+            this.treeFramesBox.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tree_frames_NodeMouseClick);
             // 
-            // colorTableFrame
+            // colorTableBox
             // 
-            this.colorTableFrame.BackColor = System.Drawing.SystemColors.Info;
-            this.colorTableFrame.Location = new System.Drawing.Point(114, 42);
-            this.colorTableFrame.Name = "colorTableFrame";
-            this.colorTableFrame.Size = new System.Drawing.Size(480, 101);
-            this.colorTableFrame.TabIndex = 2;
-            this.colorTableFrame.TabStop = false;
+            this.colorTableBox.BackColor = System.Drawing.SystemColors.Info;
+            this.colorTableBox.Location = new System.Drawing.Point(114, 42);
+            this.colorTableBox.Name = "colorTableBox";
+            this.colorTableBox.Size = new System.Drawing.Size(480, 101);
+            this.colorTableBox.TabIndex = 2;
+            this.colorTableBox.TabStop = false;
             // 
-            // label1
+            // mainImageBox
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(114, 25);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(69, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Colors Table:";
-            // 
-            // mainImageFrame
-            // 
-            this.mainImageFrame.BackColor = System.Drawing.Color.DimGray;
-            this.mainImageFrame.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.mainImageFrame.InitialImage = null;
-            this.mainImageFrame.Location = new System.Drawing.Point(114, 169);
-            this.mainImageFrame.MinimumSize = new System.Drawing.Size(300, 300);
-            this.mainImageFrame.Name = "mainImageFrame";
-            this.mainImageFrame.Size = new System.Drawing.Size(300, 300);
-            this.mainImageFrame.TabIndex = 4;
-            this.mainImageFrame.TabStop = false;
-            this.mainImageFrame.WaitOnLoad = true;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(114, 152);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(39, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Frame:";
+            this.mainImageBox.BackColor = System.Drawing.Color.DimGray;
+            this.mainImageBox.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.mainImageBox.InitialImage = null;
+            this.mainImageBox.Location = new System.Drawing.Point(114, 169);
+            this.mainImageBox.MinimumSize = new System.Drawing.Size(300, 300);
+            this.mainImageBox.Name = "mainImageBox";
+            this.mainImageBox.Size = new System.Drawing.Size(300, 300);
+            this.mainImageBox.TabIndex = 4;
+            this.mainImageBox.TabStop = false;
+            this.mainImageBox.WaitOnLoad = true;
             // 
             // statusBar
             // 
             this.statusBar.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.statusBar.Location = new System.Drawing.Point(0, 514);
+            this.statusBar.Location = new System.Drawing.Point(0, 493);
             this.statusBar.Name = "statusBar";
             this.statusBar.ReadOnly = true;
-            this.statusBar.Size = new System.Drawing.Size(641, 20);
+            this.statusBar.Size = new System.Drawing.Size(624, 20);
             this.statusBar.TabIndex = 6;
             // 
-            // txt_info
+            // infoBox
             // 
-            this.txt_info.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.infoBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txt_info.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_info.Location = new System.Drawing.Point(420, 169);
-            this.txt_info.Name = "txt_info";
-            this.txt_info.ReadOnly = true;
-            this.txt_info.Size = new System.Drawing.Size(199, 217);
-            this.txt_info.TabIndex = 7;
-            this.txt_info.Text = "";
+            this.infoBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.infoBox.Location = new System.Drawing.Point(420, 169);
+            this.infoBox.Name = "infoBox";
+            this.infoBox.ReadOnly = true;
+            this.infoBox.Size = new System.Drawing.Size(182, 279);
+            this.infoBox.TabIndex = 7;
+            this.infoBox.Text = "";
             // 
-            // pBar
+            // progressBar
             // 
-            this.pBar.Location = new System.Drawing.Point(291, 12);
-            this.pBar.Name = "pBar";
-            this.pBar.Size = new System.Drawing.Size(336, 10);
-            this.pBar.TabIndex = 9;
+            this.progressBar.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.progressBar.Location = new System.Drawing.Point(0, 469);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(624, 24);
+            this.progressBar.TabIndex = 9;
             // 
-            // toolStripContainer1
+            // mainContainer
             // 
             // 
-            // toolStripContainer1.ContentPanel
+            // mainContainer.ContentPanel
             // 
-            this.toolStripContainer1.ContentPanel.AutoScroll = true;
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.overImage);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.toolStrip1);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.pBar);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.txt_info);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.statusBar);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.label2);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.mainImageFrame);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.label1);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.colorTableFrame);
-            this.toolStripContainer1.ContentPanel.Controls.Add(this.tree_frames);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(641, 534);
-            this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
-            this.toolStripContainer1.Name = "toolStripContainer1";
-            this.toolStripContainer1.Size = new System.Drawing.Size(641, 534);
-            this.toolStripContainer1.TabIndex = 10;
-            this.toolStripContainer1.Text = "toolStripContainer1";
+            this.mainContainer.ContentPanel.AutoScroll = true;
+            this.mainContainer.ContentPanel.Controls.Add(this.toolStrip);
+            this.mainContainer.ContentPanel.Controls.Add(this.progressBar);
+            this.mainContainer.ContentPanel.Controls.Add(this.infoBox);
+            this.mainContainer.ContentPanel.Controls.Add(this.statusBar);
+            this.mainContainer.ContentPanel.Controls.Add(this.mainImageBox);
+            this.mainContainer.ContentPanel.Controls.Add(this.colorTableBox);
+            this.mainContainer.ContentPanel.Controls.Add(this.treeFramesBox);
+            this.mainContainer.ContentPanel.Size = new System.Drawing.Size(641, 509);
+            this.mainContainer.Dock = DockStyle.Fill;
+            this.mainContainer.Location = new Point(0, 0);
+            this.mainContainer.Name = "mainContainer";
+            this.mainContainer.Size = new Size(641, 534);
+            this.mainContainer.TabIndex = 0;
             // 
-            // overImage
+            // toolStrip
             // 
-            this.overImage.BackColor = System.Drawing.Color.Transparent;
-            this.overImage.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.overImage.Image = ((System.Drawing.Image)(resources.GetObject("overImage.Image")));
-            this.overImage.InitialImage = null;
-            this.overImage.Location = new System.Drawing.Point(114, 169);
-            this.overImage.MinimumSize = new System.Drawing.Size(300, 300);
-            this.overImage.Name = "overImage";
-            this.overImage.Size = new System.Drawing.Size(300, 300);
-            this.overImage.TabIndex = 10;
-            this.overImage.TabStop = false;
-            this.overImage.WaitOnLoad = true;
+            this.toolStrip.AllowMerge = false;
+            this.toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.w});
+            this.toolStrip.Location = new System.Drawing.Point(0, 0);
+            this.toolStrip.Name = "toolStrip";
+            this.toolStrip.Size = new System.Drawing.Size(624, 25);
+            this.toolStrip.Stretch = true;
+            this.toolStrip.TabIndex = 8;
+            this.toolStrip.Text = "toolStrip1";
             // 
-            // toolStrip1
+            // File Drop Down
             // 
-            this.toolStrip1.AllowMerge = false;
-            this.toolStrip1.Dock = System.Windows.Forms.DockStyle.None;
-            this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openButton,
-            this.exportButton,
-            this.OpenFolder});
-            this.toolStrip1.Location = new System.Drawing.Point(9, 3);
-            this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(163, 25);
-            this.toolStrip1.TabIndex = 8;
-            this.toolStrip1.Text = "toolStrip1";
+            this.w.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.w.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openFileMenuItem,
+            this.openFolderFileMenuItem,
+            this.exportMenuItem,
+            this.exitFileMenuItem});
+            this.w.Image = ((System.Drawing.Image)(resources.GetObject("w.Image")));
+            this.w.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.w.Name = "w";
+            this.w.Size = new System.Drawing.Size(38, 22);
+            this.w.Text = "FIle";
             // 
-            // openButton
+            // openFileMenuItem
             // 
-            this.openButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.openButton.Image = ((System.Drawing.Image)(resources.GetObject("openButton.Image")));
-            this.openButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.openButton.Name = "openButton";
-            this.openButton.Size = new System.Drawing.Size(40, 22);
-            this.openButton.Text = "Open";
-            this.openButton.Click += new System.EventHandler(this.OpenButtonClick);
+            this.openFileMenuItem.Name = "openFileMenuItem";
+            this.openFileMenuItem.Size = new Size(180, 22);
+            this.openFileMenuItem.Text = "Open";
+            this.openFileMenuItem.Click += new EventHandler(this.OpenButtonClick);
             // 
-            // exportButton
+            // openFolderFileMenuItem
             // 
-            this.exportButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.exportButton.Image = ((System.Drawing.Image)(resources.GetObject("exportButton.Image")));
-            this.exportButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.exportButton.Name = "exportButton";
-            this.exportButton.Size = new System.Drawing.Size(44, 22);
-            this.exportButton.Text = "Export";
-            this.exportButton.ToolTipText = "Export";
-            this.exportButton.Click += new System.EventHandler(this.exportButton_Click);
+            this.openFolderFileMenuItem.Name = "openFolderFileMenuItem";
+            this.openFolderFileMenuItem.Size = new Size(180, 22);
+            this.openFolderFileMenuItem.Text = "Open Folder";
+            this.openFolderFileMenuItem.Click += new EventHandler(this.OpenFolderClick);
             // 
-            // OpenFolder
+            // exportMenuItem
             // 
-            this.OpenFolder.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.OpenFolder.Image = ((System.Drawing.Image)(resources.GetObject("OpenFolder.Image")));
-            this.OpenFolder.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.OpenFolder.Name = "OpenFolder";
-            this.OpenFolder.Size = new System.Drawing.Size(76, 22);
-            this.OpenFolder.Text = "Open Folder";
-            this.OpenFolder.ToolTipText = "Open Folder";
+            this.exportMenuItem.Name = "exportMenuItem";
+            this.exportMenuItem.Size = new Size(180, 22);
+            this.exportMenuItem.Text = "Export";
+            this.exportMenuItem.Click += new EventHandler(this.exportButton_Click);
             // 
-            // folderBrowserOpen
+            // exitFileMenuItem
             // 
-            this.folderBrowserOpen.Description = "Select a folder with all the .bin files";
-            this.folderBrowserOpen.ShowNewFolderButton = false;
-            this.folderBrowserOpen.HelpRequest += new System.EventHandler(this.folderBrowserOpen_HelpRequest);
+            this.exitFileMenuItem.Name = "exitFileMenuItem";
+            this.exitFileMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exitFileMenuItem.Text = "Exit";
+            // 
+            // openFolderDialog
+            // 
+            this.openFolderDialog.ShowNewFolderButton = false;
             // 
             // KRFrameViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(641, 534);
-            this.Controls.Add(this.toolStripContainer1);
+            this.Controls.Add(this.mainContainer);
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(549, 503);
             this.Name = "KRFrameViewer";
             this.ShowIcon = false;
             this.Text = "KRFrameViewer 0.6.1";
-            ((System.ComponentModel.ISupportInitialize)(this.colorTableFrame)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.mainImageFrame)).EndInit();
-            this.toolStripContainer1.ContentPanel.ResumeLayout(false);
-            this.toolStripContainer1.ContentPanel.PerformLayout();
-            this.toolStripContainer1.ResumeLayout(false);
-            this.toolStripContainer1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.overImage)).EndInit();
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.colorTableBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.mainImageBox)).EndInit();
+            this.mainContainer.ContentPanel.ResumeLayout(false);
+            this.mainContainer.ContentPanel.PerformLayout();
+            this.mainContainer.ResumeLayout(false);
+            this.mainContainer.PerformLayout();
+            this.toolStrip.ResumeLayout(false);
+            this.toolStrip.PerformLayout();
             this.ResumeLayout(false);
 
-		}
-		public KRFrameViewer()
-		{
-			this.InitializeComponent();
-			this.m_Colors = new List<ColorEntry>();
-			this.m_Frames = new List<FrameEntry>();
-            this.m_colorList = new List<uint>();
-            overImage.Parent = mainImageFrame;
-            overImage.BackColor = Color.Transparent;
-            overImage.Location = new Point(0, 0);
         }
-
-		private void AboutButtonClick(object sender, EventArgs e)
-		{
-			(new About()).ShowDialog();
-		}
-
-
-
-        private void ExporFolderClick(object sender, EventArgs e)
+        public KRFrameViewer()
         {
-
+            this.InitializeComponent();
+            this.m_Colors = new List<ColorEntry>();
+            this.m_Frames = new List<FrameEntry>();
+            this.m_colorList = new List<uint>();
         }
-		private void OpenButtonClick(object sender, EventArgs e)
-		{
-			if (openFileDialog.ShowDialog() == DialogResult.OK)
+
+        private void OpenFolderClick(object sender, EventArgs e)
+        {
+            if(openFolderDialog.ShowDialog() == DialogResult.OK)
+            {
+                statusBar.Text = this.openFolderDialog.SelectedPath;
+                DirectoryInfo selectedPath = new DirectoryInfo(openFolderDialog.SelectedPath);
+                FileInfo[] Files = selectedPath.GetFiles("*.bin");
+                int count = 0;
+                foreach(FileInfo file in Files)
+                {
+                    count++;
+                    statusBar.Text = count.ToString();
+                }
+
+            }
+        }
+        private void OpenButtonClick(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 this.Clear();
                 using (var fileStream = new FileStream(this.openFileDialog.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-			    {
-				    using (BinaryReader binaryReader = new BinaryReader(fileStream))
-				    {
-					    if (!ReadHeader(binaryReader))
-					    {
-						    statusBar.Text = "Invalid file.";
-					    }
-					    else
-					    {
-						    ReadColors(binaryReader);
+                {
+                    using (BinaryReader binaryReader = new BinaryReader(fileStream))
+                    {
+                        if (!ReadHeader(binaryReader))
+                        {
+                            statusBar.Text = "Invalid file.";
+                        }
+                        else
+                        {
+                            ReadColors(binaryReader);
                             ReadFrames(binaryReader);
                             ReadPixels(binaryReader);
                             //FillColorList(binaryReader);
                         }
-				    }
-			    }
-                this.colorTableFrame.Image = CreateColorBarBitmap();
+                    }
+                }
+                this.colorTableBox.Image = CreateColorBarBitmap();
                 CreateTreeNode();
             }
         }
@@ -511,7 +406,7 @@ namespace KRFrameViewer
                 };
                 ushort frame = this.m_Frames[f].Frame;
                 childNode.Text = frame.ToString();
-                tree_frames.Nodes.Add(childNode);
+                treeFramesBox.Nodes.Add(childNode);
             }
         }
         private void tree_frames_AfterSelect(object sender, TreeViewEventArgs e)
@@ -522,9 +417,9 @@ namespace KRFrameViewer
         }
         private void tree_frames_BeforeSelect(object sender, TreeViewCancelEventArgs e)
         {
-            if (this.tree_frames.SelectedNode != null)
+            if (this.treeFramesBox.SelectedNode != null)
             {
-                this.tree_frames.SelectedNode.BackColor = Color.Transparent;
+                this.treeFramesBox.SelectedNode.BackColor = Color.Transparent;
             }
         }
         private void tree_frames_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
@@ -534,7 +429,7 @@ namespace KRFrameViewer
         }
         private Bitmap CreateColorBarBitmap()
         {
-            Bitmap colorImgBmp = new Bitmap((int) (this.m_ColorCount + 100), 101);
+            Bitmap colorImgBmp = new Bitmap((int)(this.m_ColorCount + 100), 101);
 
             int num = 0;
             for (int i = 0; i < this.m_Colors.Count; i++)
@@ -553,84 +448,84 @@ namespace KRFrameViewer
                 colorImgBmp.SetPixel(i + num, 100, Color.Black);
             }
 
-            PictureBox size = this.colorTableFrame;
-            Size size1 = this.colorTableFrame.Size;
+            PictureBox size = this.colorTableBox;
+            Size size1 = this.colorTableBox.Size;
 
             size.Size = new System.Drawing.Size((int)(this.m_ColorCount + 100), size1.Height);
 
-			return colorImgBmp;
+            return colorImgBmp;
         }
         private void exportButton_Click(object sender, EventArgs e)
-		{
-			if (this.folderBrowseExport.ShowDialog() == DialogResult.OK)
-			{
-				this.m_ExtractionFolder = this.folderBrowseExport.SelectedPath;
+        {
+            if (this.exportFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                this.m_ExtractionFolder = this.exportFileDialog.SelectedPath;
                 this.worker.RunWorkerAsync();
-			}
-			this.pBar.Maximum = this.tree_frames.Nodes.Count;
-			this.pBar.Minimum = 0;
-			this.pBar.Value = 0;
-		}
+            }
+            this.progressBar.Maximum = this.treeFramesBox.Nodes.Count;
+            this.progressBar.Minimum = 0;
+            this.progressBar.Value = 0;
+        }
         //TODO: Save the image together with the background for the Gump
-		//TODO: Make it so it's possible to open a entire folder full of subfolders inside
-		//TODO: Export to .vd directly
-		private void ChangeFrame(TreeNode node)
+        //TODO: Make it so it's possible to open a entire folder full of subfolders inside
+        //TODO: Export to .vd directly
+        private void ChangeFrame(TreeNode node)
         {
             //TODO:Make this a unique method that takes the node as a param and returns a bitmap
             //The total size of the frame image
             var backgroundImgWidth = Math.Abs(this.m_EndCoordsX - this.m_InitCoordsX);
             var backgroundImgHeight = Math.Abs(this.m_EndCoordsY - this.m_InitCoordsY);
             this.statusBar.Text = "Distance X: " + backgroundImgWidth + "Distance Y: " + backgroundImgHeight;
-			this.tree_frames.SelectedNode = node;
-	        FrameEntry currentFrame = (FrameEntry)node.Tag;
-			Bitmap frameImage = this.LoadFrameImage(currentFrame);
+            this.treeFramesBox.SelectedNode = node;
+            FrameEntry currentFrame = (FrameEntry)node.Tag;
+            Bitmap frameImage = this.LoadFrameImage(currentFrame);
             Bitmap backgroundImage = new Bitmap(backgroundImgWidth, backgroundImgHeight);
             //Draws the background based on the offset provided by the data
             for (int x = 0; x < backgroundImgWidth; x++)
-			{
-				for (int y = 0; y < backgroundImgHeight; y++)
-				{
-					backgroundImage.SetPixel(x, y, Color.Black);
-				}
-			}
+            {
+                for (int y = 0; y < backgroundImgHeight; y++)
+                {
+                    backgroundImage.SetPixel(x, y, Color.Black);
+                }
+            }
             //Expands the frame if the image can't fit
-			if (this.mainImageFrame.Size.Width < backgroundImgWidth || this.mainImageFrame.Size.Height < backgroundImgHeight)
-			{
-				Size size = base.Size;
-				int width = size.Width + (backgroundImgWidth - this.mainImageFrame.Width);
-				Size size1 = base.Size;
-				base.Size = new Size(width, size1.Height + (backgroundImgHeight - this.mainImageFrame.Height));
-				RichTextBox txtInfo = this.txt_info;
-				Point location = this.txt_info.Location;
-				int x = location.X + (backgroundImgWidth - this.mainImageFrame.Width);
-				Point point = this.txt_info.Location;
-				txtInfo.Location = new Point(x, point.Y);
-				this.mainImageFrame.Size = new System.Drawing.Size(backgroundImgWidth, backgroundImgHeight);
-			}
+            if (this.mainImageBox.Size.Width < backgroundImgWidth || this.mainImageBox.Size.Height < backgroundImgHeight)
+            {
+                Size size = base.Size;
+                int width = size.Width + (backgroundImgWidth - this.mainImageBox.Width);
+                Size size1 = base.Size;
+                base.Size = new Size(width, size1.Height + (backgroundImgHeight - this.mainImageBox.Height));
+                RichTextBox txtInfo = this.infoBox;
+                Point location = this.infoBox.Location;
+                int x = location.X + (backgroundImgWidth - this.mainImageBox.Width);
+                Point point = this.infoBox.Location;
+                txtInfo.Location = new Point(x, point.Y);
+                this.mainImageBox.Size = new System.Drawing.Size(backgroundImgWidth, backgroundImgHeight);
+            }
             //TODO:Make this a unique method that takes a background image bmp and returns a new bitmap with both combined
             //Draws the frame on top of the background image
-			for (var x = 0; x < frameImage.Width; x++)
-			{
-				for (var y = 0; y < frameImage.Height; y++)
+            for (var x = 0; x < frameImage.Width; x++)
+            {
+                for (var y = 0; y < frameImage.Height; y++)
                 {
                     var i = Math.Abs(this.m_InitCoordsX - currentFrame.InitCoordsX);
                     var j = Math.Abs(this.m_InitCoordsY - currentFrame.InitCoordsY);
                     var pixel = frameImage.GetPixel(x, y);
 
-					backgroundImage.SetPixel(i + x, j + y, pixel);
+                    backgroundImage.SetPixel(i + x, j + y, pixel);
                 }
-			}
-            this.mainImageFrame.BackgroundImageLayout = ImageLayout.Center;
-			this.mainImageFrame.BackgroundImage= backgroundImage;
+            }
+            this.mainImageBox.BackgroundImageLayout = ImageLayout.Center;
+            this.mainImageBox.BackgroundImage = backgroundImage;
             //Show the header info on the right panel
-			ShowFrameInfo(currentFrame);
+            ShowFrameInfo(currentFrame);
         }
         private void ShowFrameInfo(FrameEntry tag)
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append(string.Concat("Frames per Angle:",this.m_FrameCount/5, "\n\n"));
-			stringBuilder.Append(string.Concat("Length: ", this.m_Length, "\n\n"));
-			stringBuilder.Append(string.Concat("Version: ", this.m_Version, "\n"));
+            stringBuilder.Append(string.Concat("Frames per Angle:", this.m_FrameCount / 5, "\n\n"));
+            stringBuilder.Append(string.Concat("Length: ", this.m_Length, "\n\n"));
+            stringBuilder.Append(string.Concat("Version: ", this.m_Version, "\n"));
             stringBuilder.Append(string.Concat("ColourCount: ", this.m_ColorCount, "\n"));
             stringBuilder.Append(string.Concat("ColourOffset: ", this.m_ColorAddress, "\n"));
             stringBuilder.Append(string.Concat("FramesCount: ", this.m_FrameCount, "\n"));
@@ -642,225 +537,225 @@ namespace KRFrameViewer
             };
             stringBuilder.Append(string.Concat(mInitCoordsX));
 
-            object[] initCoordsX = {"Initial X:\t", tag.InitCoordsX, " End X:\t", tag.EndCoordsX, "\n"};
+            object[] initCoordsX = { "Initial X:\t", tag.InitCoordsX, " End X:\t", tag.EndCoordsX, "\n" };
             stringBuilder.Append(string.Concat(initCoordsX));
-            object[] initCoordsY = {"Initial Y:", tag.InitCoordsY, " End Y:\t", tag.EndCoordsY, "\n"};
+            object[] initCoordsY = { "Initial Y:", tag.InitCoordsY, " End Y:\t", tag.EndCoordsY, "\n" };
             stringBuilder.Append(string.Concat(initCoordsY));
             object[] frameAndID = { "Frame:", tag.Frame, " ID:\t", tag.ID, "\n" };
             stringBuilder.Append(string.Concat(frameAndID));
-            object[] objArray = {"\nWidth: ", tag.Width, " Height: ", tag.Height};
+            object[] objArray = { "\nWidth: ", tag.Width, " Height: ", tag.Height };
             stringBuilder.Append(string.Concat(objArray));
             stringBuilder.Append(string.Concat("\n\nSize: ", tag.Width * tag.Height));
-            this.txt_info.Text = string.Concat(stringBuilder.ToString(), "\nOffset: ", tag.DataOffset);
+            this.infoBox.Text = string.Concat(stringBuilder.ToString(), "\nOffset: ", tag.DataOffset);
         }
         private void Clear()
         {
             this.m_ColorAddress = 0;
-			this.m_ColorCount = 0;
-			this.m_Colors.Clear();
+            this.m_ColorCount = 0;
+            this.m_Colors.Clear();
             this.m_colorList.Clear();
-			this.m_EndCoordsX = 0;
-			this.m_EndCoordsY = 0;
-			this.m_FrameAddress = 0;
-			this.m_FrameCount = 0;
-			this.m_Frames.Clear();
-			this.m_ID = 0;
-			this.m_InitCoordsX = 0;
-			this.m_InitCoordsY = 0;
-			this.m_Length = 0;
-			this.m_Version = 0;
-			this.tree_frames.Nodes.Clear();
-			this.colorTableFrame.Image = this.colorTableFrame.InitialImage;
-			this.mainImageFrame.BackgroundImage = null;
-			this.txt_info.Clear();
-		}
+            this.m_EndCoordsX = 0;
+            this.m_EndCoordsY = 0;
+            this.m_FrameAddress = 0;
+            this.m_FrameCount = 0;
+            this.m_Frames.Clear();
+            this.m_ID = 0;
+            this.m_InitCoordsX = 0;
+            this.m_InitCoordsY = 0;
+            this.m_Length = 0;
+            this.m_Version = 0;
+            this.treeFramesBox.Nodes.Clear();
+            this.colorTableBox.Image = this.colorTableBox.InitialImage;
+            this.mainImageBox.BackgroundImage = null;
+            this.infoBox.Clear();
+        }
         private Color CombineColors(Color sourceColor, Color targetColor, int factor)
-		{
-			long argb = (long)sourceColor.ToArgb();
-			long num = (long)targetColor.ToArgb();
-			long num1 = (argb & (long)16711935) * (long)factor;
-			long num2 = (num & (long)16711935) * (long)(16 - factor);
-			long num3 = num1 + num2;
-			long num4 = (Int64)((argb >> 4 & (Int64)(-1044496) * (long)factor));
-			long num5 = (Int64)((num >> 4 & (Int64)(-1044496) * (long)(16 - factor)));
-			long num6 = num4 + num5;
-			long num7 = (argb >> 4 & (long)267390960) * (long)factor;
-			long num8 = (num >> 4 & (long)267390960) * (long)(16 - factor);
-			long num9 = num7 + num8;
-			long num10 = (num3 >> 4 ^ num6) & (long)16711935 ^ num9;
-			return Color.FromArgb((int)num10);
-		}
+        {
+            long argb = (long)sourceColor.ToArgb();
+            long num = (long)targetColor.ToArgb();
+            long num1 = (argb & (long)16711935) * (long)factor;
+            long num2 = (num & (long)16711935) * (long)(16 - factor);
+            long num3 = num1 + num2;
+            long num4 = (Int64)((argb >> 4 & (Int64)(-1044496) * (long)factor));
+            long num5 = (Int64)((num >> 4 & (Int64)(-1044496) * (long)(16 - factor)));
+            long num6 = num4 + num5;
+            long num7 = (argb >> 4 & (long)267390960) * (long)factor;
+            long num8 = (num >> 4 & (long)267390960) * (long)(16 - factor);
+            long num9 = num7 + num8;
+            long num10 = (num3 >> 4 ^ num6) & (long)16711935 ^ num9;
+            return Color.FromArgb((int)num10);
+        }
         //Inner image frame
-		public Bitmap LoadFrameImage(FrameEntry currentFrameEntry)
-		{
-			int x;
-			int y;
+        public Bitmap LoadFrameImage(FrameEntry currentFrameEntry)
+        {
+            int x;
+            int y;
             byte[] numArray = this._ImageData;
 
             var frameWidth = Math.Abs(currentFrameEntry.EndCoordsX - currentFrameEntry.InitCoordsX);
             var frameHeight = Math.Abs(currentFrameEntry.EndCoordsY - currentFrameEntry.InitCoordsY);
             var frameImage = new Bitmap(frameWidth, frameHeight);
             //Changes the alpha of the image and the background pixels to a color that will be combined later
-			for (x = 0; x < frameWidth; x++)
-			{
-				for (y = 0; y < frameHeight; y++)
+            for (x = 0; x < frameWidth; x++)
+            {
+                for (y = 0; y < frameHeight; y++)
                 {
                     var color = Color.White;
-					frameImage.SetPixel(x, y, color);
+                    frameImage.SetPixel(x, y, color);
                 }
-			}
-			
-			//Zero the counters
+            }
+
+            //Zero the counters
             x = 0;
-			y = 0;
+            y = 0;
 
             //Draw and combine the background color with the image pixels, using the previous defined color
             var dataOffset = (int)(currentFrameEntry.DataOffset - this._ImageDataOffset);
 
             while (y < frameHeight)
-			{
+            {
                 var num3 = dataOffset;
-				dataOffset = num3 + 1;
-				byte k = numArray[num3];
-				if (k >= 128)
-				{
+                dataOffset = num3 + 1;
+                byte k = numArray[num3];
+                if (k >= 128)
+                {
                     Color pixel;
                     Color color;
                     byte num;
-					var num4 = dataOffset;
-					dataOffset = num4 + 1;
-					var num5 = numArray[num4];
-					var num6 = num5 / 16;
-					var num7 = num5 % 16;
-					if (num6 > 0)
-					{
-						var num8 = dataOffset;
-						dataOffset = num8 + 1;
-						num = numArray[num8];
-						pixel = this.m_Colors[num].Pixel;
-						color = frameImage.GetPixel(x, y);
-						pixel = this.CombineColors(pixel, color, num6);
-						frameImage.SetPixel(x, y, pixel);
-						this.NextCoordinate(ref x, ref y, frameWidth, frameHeight);
-					}
-					for (k = (byte)(k - 128); k > 0; k = (byte)(k - 1))
-					{
-						var num9 = dataOffset;
-						dataOffset = num9 + 1;
-						num = numArray[num9];
-						pixel = this.m_Colors[num].Pixel;
-						frameImage.SetPixel(x, y, pixel);
-						this.NextCoordinate(ref x, ref y, frameWidth, frameHeight);
-					}
-					if (num7 <= 0)
-					{
-						continue;
-					}
-					var num10 = dataOffset;
-					dataOffset = num10 + 1;
-					num = numArray[num10];
-					pixel = this.m_Colors[num].Pixel;
-					color = frameImage.GetPixel(x, y);
-					pixel = this.CombineColors(pixel, color, num7);
-					frameImage.SetPixel(x, y, pixel);
-					this.NextCoordinate(ref x, ref y, frameWidth, frameHeight);
-				}
-				else
-				{
-					while (k > 0)
-					{
-						this.NextCoordinate(ref x, ref y, frameWidth, frameHeight);
-						k = (byte)(k - 1);
-					}
-				}
-			}
-			return frameImage;
-		}
-		private bool NextCoordinate(ref int curX, ref int curY, int width, int height)
-		{
-			curX++;
-			if (curX >= width)
-			{
-				curX = 0;
-				curY++;
-			}
-			if (curY < height && curX < width)
-			{
-				return true;
-			}
-			return false;
-		}
-		private bool ReadColors(BinaryReader reader)
-		{
-			reader.BaseStream.Seek(this.m_ColorAddress, SeekOrigin.Begin);
-			this.m_Colors.Clear();
-			for (int i = 0; i < this.m_ColorCount; i++)
+                    var num4 = dataOffset;
+                    dataOffset = num4 + 1;
+                    var num5 = numArray[num4];
+                    var num6 = num5 / 16;
+                    var num7 = num5 % 16;
+                    if (num6 > 0)
+                    {
+                        var num8 = dataOffset;
+                        dataOffset = num8 + 1;
+                        num = numArray[num8];
+                        pixel = this.m_Colors[num].Pixel;
+                        color = frameImage.GetPixel(x, y);
+                        pixel = this.CombineColors(pixel, color, num6);
+                        frameImage.SetPixel(x, y, pixel);
+                        this.NextCoordinate(ref x, ref y, frameWidth, frameHeight);
+                    }
+                    for (k = (byte)(k - 128); k > 0; k = (byte)(k - 1))
+                    {
+                        var num9 = dataOffset;
+                        dataOffset = num9 + 1;
+                        num = numArray[num9];
+                        pixel = this.m_Colors[num].Pixel;
+                        frameImage.SetPixel(x, y, pixel);
+                        this.NextCoordinate(ref x, ref y, frameWidth, frameHeight);
+                    }
+                    if (num7 <= 0)
+                    {
+                        continue;
+                    }
+                    var num10 = dataOffset;
+                    dataOffset = num10 + 1;
+                    num = numArray[num10];
+                    pixel = this.m_Colors[num].Pixel;
+                    color = frameImage.GetPixel(x, y);
+                    pixel = this.CombineColors(pixel, color, num7);
+                    frameImage.SetPixel(x, y, pixel);
+                    this.NextCoordinate(ref x, ref y, frameWidth, frameHeight);
+                }
+                else
+                {
+                    while (k > 0)
+                    {
+                        this.NextCoordinate(ref x, ref y, frameWidth, frameHeight);
+                        k = (byte)(k - 1);
+                    }
+                }
+            }
+            return frameImage;
+        }
+        private bool NextCoordinate(ref int curX, ref int curY, int width, int height)
+        {
+            curX++;
+            if (curX >= width)
+            {
+                curX = 0;
+                curY++;
+            }
+            if (curY < height && curX < width)
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool ReadColors(BinaryReader reader)
+        {
+            reader.BaseStream.Seek(this.m_ColorAddress, SeekOrigin.Begin);
+            this.m_Colors.Clear();
+            for (int i = 0; i < this.m_ColorCount; i++)
             {
                 ColorEntry colorEntry = new ColorEntry(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
-				this.m_Colors.Add(colorEntry);
-  
-			}
-			return true;
-		}
-        private bool ReadFrames(BinaryReader reader)
-		{
-			reader.BaseStream.Seek(this.m_FrameAddress, SeekOrigin.Begin);
-			this.m_Frames.Clear();
-			for (var i = 0; i < this.m_FrameCount; i++)
-			{
-				FrameEntry frameEntry = new FrameEntry(reader.ReadUInt16(), reader.ReadUInt16(), reader.ReadInt16(), reader.ReadInt16(), reader.ReadInt16(), reader.ReadInt16(), (uint)(this.m_FrameAddress + (i * 16) + reader.ReadUInt32()), this.m_ColorCount);
-				this.m_Frames.Add(frameEntry);
-			}
-			return true;
-		}
+                this.m_Colors.Add(colorEntry);
 
-		private bool ReadHeader(BinaryReader reader)
-		{
-			this.m_Head = reader.ReadBytes(4);
-			if (this.m_Head[0] != 65 || this.m_Head[1] != 77 || this.m_Head[2] != 79)
-			{
-				return false;
-			}
+            }
+            return true;
+        }
+        private bool ReadFrames(BinaryReader reader)
+        {
+            reader.BaseStream.Seek(this.m_FrameAddress, SeekOrigin.Begin);
+            this.m_Frames.Clear();
+            for (var i = 0; i < this.m_FrameCount; i++)
+            {
+                FrameEntry frameEntry = new FrameEntry(reader.ReadUInt16(), reader.ReadUInt16(), reader.ReadInt16(), reader.ReadInt16(), reader.ReadInt16(), reader.ReadInt16(), (uint)(this.m_FrameAddress + (i * 16) + reader.ReadUInt32()), this.m_ColorCount);
+                this.m_Frames.Add(frameEntry);
+            }
+            return true;
+        }
+
+        private bool ReadHeader(BinaryReader reader)
+        {
+            this.m_Head = reader.ReadBytes(4);
+            if (this.m_Head[0] != 65 || this.m_Head[1] != 77 || this.m_Head[2] != 79)
+            {
+                return false;
+            }
 
             this.m_Version = reader.ReadUInt32();
             this.m_Length = reader.ReadUInt32();
-			this.m_ID = reader.ReadUInt32();
-			this.m_InitCoordsX = reader.ReadInt16();
-			this.m_InitCoordsY = reader.ReadInt16();
-			this.m_EndCoordsX = reader.ReadInt16();
-			this.m_EndCoordsY = reader.ReadInt16();
-			this.m_ColorCount = reader.ReadUInt32();
-			this.m_ColorAddress = reader.ReadUInt32();
-			this.m_FrameCount = reader.ReadUInt32();
-			this.m_FrameAddress = reader.ReadUInt32();
-			return true;
-		}
+            this.m_ID = reader.ReadUInt32();
+            this.m_InitCoordsX = reader.ReadInt16();
+            this.m_InitCoordsY = reader.ReadInt16();
+            this.m_EndCoordsX = reader.ReadInt16();
+            this.m_EndCoordsY = reader.ReadInt16();
+            this.m_ColorCount = reader.ReadUInt32();
+            this.m_ColorAddress = reader.ReadUInt32();
+            this.m_FrameCount = reader.ReadUInt32();
+            this.m_FrameAddress = reader.ReadUInt32();
+            return true;
+        }
 
-		private bool ReadPixels(BinaryReader reader)
-		{
-			this._ImageDataOffset = this.m_FrameAddress + this.m_FrameCount * 16;
-			this._ImageData = new byte[(int)(this.m_Length - this._ImageDataOffset)];
-			reader.BaseStream.Seek(this._ImageDataOffset, SeekOrigin.Begin);
-			this._ImageData = reader.ReadBytes((int)(this.m_Length - this._ImageDataOffset));
-			return true;
-		}
+        private bool ReadPixels(BinaryReader reader)
+        {
+            this._ImageDataOffset = this.m_FrameAddress + this.m_FrameCount * 16;
+            this._ImageData = new byte[(int)(this.m_Length - this._ImageDataOffset)];
+            reader.BaseStream.Seek(this._ImageDataOffset, SeekOrigin.Begin);
+            this._ImageData = reader.ReadBytes((int)(this.m_Length - this._ImageDataOffset));
+            return true;
+        }
 
         //TODO:Make it export either the current img with a liste.txt or a combined bmp file
         //Export the image as a bmp
         private void worker_DoWork(object sender, DoWorkEventArgs e)
-		{
-			for (int i = 0; i < this.tree_frames.Nodes.Count; i++)
+        {
+            for (int i = 0; i < this.treeFramesBox.Nodes.Count; i++)
             {
                 int HALFTILE = 22;
-                var currentFrame = (FrameEntry)this.tree_frames.Nodes[i].Tag;
-                
+                var currentFrame = (FrameEntry)this.treeFramesBox.Nodes[i].Tag;
+
                 var animFramesPerAnimation = m_FrameCount / 5;
                 this.worker.ReportProgress(i);
-				Bitmap bitmap = this.LoadFrameImage((FrameEntry)this.tree_frames.Nodes[i].Tag);
+                Bitmap bitmap = this.LoadFrameImage((FrameEntry)this.treeFramesBox.Nodes[i].Tag);
 
                 var centerX = currentFrame.InitCoordsX * -1;
                 var centerY = Math.Abs(currentFrame.EndCoordsY) - HALFTILE;
-                var listeFilePath = Path.Combine(m_ExtractionFolder,"liste.txt");
+                var listeFilePath = Path.Combine(m_ExtractionFolder, "liste.txt");
 
                 bitmap.Save(string.Format("{0}\\{1}.bmp", this.m_ExtractionFolder, animId + "_" + animFrame, ImageFormat.Bmp));
 
@@ -879,23 +774,23 @@ namespace KRFrameViewer
                     {
                         WriteListe(sw, animId, animFrame, centerX, centerY);
                     }
-				}
+                }
                 else
-				{ 
-					using (StreamWriter sw = File.CreateText(listeFilePath))
+                {
+                    using (StreamWriter sw = File.CreateText(listeFilePath))
 
-					{
+                    {
                         WriteListe(sw, animId, animFrame, centerX, centerY);
                     }
-				}
+                }
             }
-		}
+        }
 
         //private void CreatePaletteFile(int i)
         //{
 
         //    var paletteFilePath = Path.Combine(m_ExtractionFolder, "palette_" + i + ".txt");
-         
+
         //    for (var c = 0; c <= m_ColorCount; c++)
         //    {
         //        if (File.Exists(paletteFilePath))
@@ -929,17 +824,22 @@ namespace KRFrameViewer
 
 
         private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
-		{
-			this.pBar.Value = e.ProgressPercentage;
-		}
+        {
+            this.progressBar.Value = e.ProgressPercentage;
+        }
 
-		private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             animFrame = 0;
             animId = 0;
-			this.pBar.Value = 0;
-			MessageBox.Show("Extraction completed.");
-		}
+            this.progressBar.Value = 0;
+            MessageBox.Show("Extraction completed.");
+        }
+
+        private void folderBrowseExport_HelpRequest(object sender, EventArgs e)
+        {
+
+        }
 
 
 

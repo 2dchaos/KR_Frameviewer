@@ -1,5 +1,3 @@
-using System;
-
 namespace KRFrameViewer
 {
 	public class PixelEntry
