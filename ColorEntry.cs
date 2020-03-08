@@ -59,8 +59,8 @@ namespace KRFrameViewer
 			this.m_R = R;
 			this.m_B = B;
 			this.m_G = G;
-			this.m_Alpha = Alpha;
-			this.m_Color = Color.FromArgb((int)R, (int)G, (int)B);
+			this.m_Alpha = Alpha;//not used
+			this.m_Color = Color.FromArgb(R, G, B);
 		}
 	}
 }
