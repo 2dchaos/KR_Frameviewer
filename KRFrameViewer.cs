@@ -81,16 +81,16 @@ namespace KRFrameViewer
 
         private List<uint> m_FrameAddress;
 
-        private List<List<ColorEntry>> m_Colors;
+        //private List<List<ColorEntry>> m_Colors;
 
-        private Dictionary<int, List<ColorEntry>> ColorsList = new Dictionary<int, List<ColorEntry>>();
+        private Dictionary<int, List<ColorEntry>> m_Colors = new Dictionary<int, List<ColorEntry>>();
 
-        
-        private List<List<FrameEntry>> m_Frames;
 
-        private List<List<uint>> m_colorList;
+        private Dictionary<int, List<FrameEntry>> m_Frames = new Dictionary<int, List<FrameEntry>>();
 
-        private List<byte[]> _ImageData;
+        //private Dictionary<int, List<uint>> m_colorList = 
+
+        private Dictionary<int, byte[]> _ImageData = new Dictionary<int, byte[]>();
 
         private List<long> _ImageDataOffset;
 
@@ -127,6 +127,18 @@ namespace KRFrameViewer
 
         public void InitializeComponent()
         {
+            this.m_Version = new List<uint>();
+            this.m_Length = new List<uint>();
+            this.m_ID = new List<uint>();
+            this.m_InitCoordsX = new List<short>();
+            this.m_InitCoordsY = new List<short>();
+            this.m_EndCoordsX = new List<short>();
+            this.m_EndCoordsY = new List<short>();
+            this.m_ColorCount = new List<uint>();
+            this.m_ColorAddress = new List<uint>();
+            this.m_FrameCount = new List<uint>();
+            this.m_FrameAddress = new List<uint>();
+            this._ImageDataOffset = new List<long>();
             ComponentResourceManager resources = new ComponentResourceManager(typeof(KRFrameViewer));
             this.worker = new BackgroundWorker();
             this.exportFileDialog = new FolderBrowserDialog();
@@ -157,7 +169,7 @@ namespace KRFrameViewer
             // worker
             // 
             this.worker.WorkerReportsProgress = true;
-            this.worker.DoWork += new DoWorkEventHandler(this.worker_DoWork);
+            this.worker.DoWork += new DoWorkEventHandler(this.WorkerExportFile);
             this.worker.ProgressChanged += new ProgressChangedEventHandler(this.worker_ProgressChanged);
             this.worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
             // 
@@ -348,47 +360,27 @@ namespace KRFrameViewer
         public KRFrameViewer()
         {
             this.InitializeComponent();
-
-            this.m_Version = new List<uint>();
-            this.m_Length = new List<uint>();
-            this.m_ID = new List<uint>();
-            this.m_InitCoordsX = new List<short>();
-            this.m_InitCoordsY = new List<short>();
-            this.m_EndCoordsX = new List<short>();
-            this.m_EndCoordsY = new List<short>();
-            this.m_ColorCount = new List<uint>();
-            this.m_ColorAddress = new List<uint>();
-            this.m_FrameCount = new List<uint>();
-            this.m_FrameAddress = new List<uint>();
-            this._ImageData = new List<byte[]>();
-            this._ImageDataOffset = new List<long>();
-
-            this.m_Colors = new List<List<ColorEntry>>();
-            this.m_Frames = new List<List<FrameEntry>>();
-            this.m_colorList = new List<List<uint>>();
         }
-
         private void OpenFolderClick(object sender, EventArgs e)
         {
             if(openFolderDialog.ShowDialog() == DialogResult.OK)
             {
-
                 var selectedPath = openFolderDialog.SelectedPath;
-                var numFiles = Directory.GetFiles(selectedPath,"*.bin").Length;
-
                 var c = 0;
-                             
-
                 foreach(string file in Directory.EnumerateFiles(selectedPath,"*.bin"))
                 {
                     var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite); ;
                     BinaryReader binaryReader = new BinaryReader(fileStream);
                     ReadHeader(binaryReader);
                     ReadColors(binaryReader, c);
-                    statusBar.Text = ColorsList[0][0].Pixel.ToString();
+                    ReadFrames(binaryReader, c);
+                    ReadPixels(binaryReader, c);
+                    CreateParentNode(c);
+                    c++;
+                    //statusBar.Text = m_Colors[0][0].Pixel.ToString();
                     //ReadFrames(binaryReader, c);
                     //ReadPixels(binaryReader, c);
-                    c++;
+
                     //if(ReadHeader(binaryReader))
                     //{
 
@@ -402,7 +394,7 @@ namespace KRFrameViewer
                     //}
 
                 }
-
+                //MessageBox.Show("Ok!");
             }
         }
 
@@ -421,8 +413,8 @@ namespace KRFrameViewer
                 ushort frame = this.m_Frames[c][f].Frame;
                 childNode.Text = frame.ToString();
                 parentNode.Nodes.Add(childNode);
-
             }
+            //parentNode.Text = this.m_Frames[c][0].ID.ToString();
         }
 
         private void OpenButtonClick(object sender, EventArgs e)
@@ -468,8 +460,10 @@ namespace KRFrameViewer
         private void tree_frames_AfterSelect(object sender, TreeViewEventArgs e)
         {
             e.Node.BackColor = Color.LightGray;
-            this.ChangeFrame(e.Node, e.Node.Parent);
-
+            if (e.Node.Parent != null)
+            { 
+                this.ChangeFrame(e.Node, e.Node.Parent);
+            }
         }
         private void tree_frames_BeforeSelect(object sender, TreeViewCancelEventArgs e)
         {
@@ -480,8 +474,10 @@ namespace KRFrameViewer
         }
         private void tree_frames_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            this.ChangeFrame(e.Node,e.Node.Parent);
-
+            if(e.Node.Parent != null)
+            {
+                this.ChangeFrame(e.Node, e.Node.Parent);
+            }
         }
         private Bitmap CreateColorBarBitmap(int c)
         {
@@ -507,7 +503,7 @@ namespace KRFrameViewer
             PictureBox size = this.colorTableBox;
             Size size1 = this.colorTableBox.Size;
 
-            size.Size = new System.Drawing.Size((int)(this.m_ColorCount[c] + 100), size1.Height);
+            size.Size = new Size((int)(this.m_ColorCount[c] + 100), size1.Height);
 
             return colorImgBmp;
         }
@@ -527,12 +523,9 @@ namespace KRFrameViewer
         //TODO: Export to .vd directly
         private void ChangeFrame(TreeNode childNode, TreeNode parentNode)
         {
-            //TODO:Make this a unique method that takes the node as a param and returns a bitmap
-            //The total size of the frame image
             var c = int.Parse(parentNode.Text);
             var backgroundImgWidth = Math.Abs(this.m_EndCoordsX[c] - this.m_InitCoordsX[c]);
             var backgroundImgHeight = Math.Abs(this.m_EndCoordsY[c] - this.m_InitCoordsY[c]);
-            this.statusBar.Text = "Distance X: " + backgroundImgWidth + "Distance Y: " + backgroundImgHeight;
             this.treeFramesBox.SelectedNode = childNode;
             FrameEntry currentFrame = (FrameEntry)childNode.Tag;
             Bitmap frameImage = this.LoadFrameImage(currentFrame, c);
@@ -574,7 +567,6 @@ namespace KRFrameViewer
             }
             this.mainImageBox.BackgroundImageLayout = ImageLayout.Center;
             this.mainImageBox.BackgroundImage = backgroundImage;
-            //Show the header info on the right panel
             ShowFrameInfo(currentFrame);
         }
         private void ShowFrameInfo(FrameEntry tag)
@@ -611,7 +603,6 @@ namespace KRFrameViewer
             this.m_ColorAddress[c] = 0;
             this.m_ColorCount[c] = 0;
             this.m_Colors[c].Clear();
-            this.m_colorList[c].Clear();
             this.m_EndCoordsX[c] = 0;
             this.m_EndCoordsY[c] = 0;
             this.m_FrameAddress[c] = 0;
@@ -750,7 +741,6 @@ namespace KRFrameViewer
             {
                 return false;
             }
-
             this.m_Version.Add(reader.ReadUInt32());
             this.m_Length.Add(reader.ReadUInt32());
             this.m_ID.Add(reader.ReadUInt32());
@@ -764,7 +754,6 @@ namespace KRFrameViewer
             this.m_FrameAddress.Add(reader.ReadUInt32());
             return true;
         }
-
         private bool ReadColors(BinaryReader reader, int c)
         {
            reader.BaseStream.Seek(this.m_ColorAddress[c], SeekOrigin.Begin);
@@ -773,12 +762,12 @@ namespace KRFrameViewer
                 ColorEntry colorEntry = new ColorEntry(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
                 //this.m_Colors[c].Add(colorEntry);
 
-                if(ColorsList.ContainsKey(c))
+                if(m_Colors.ContainsKey(c))
                 {
-                    ColorsList[c].Add(colorEntry);
+                    m_Colors[c].Add(colorEntry);
                 }else
                 {
-                    ColorsList[c] = new List<ColorEntry> { colorEntry };
+                    m_Colors[c] = new List<ColorEntry> { colorEntry };
                 }
      
             }
@@ -791,15 +780,20 @@ namespace KRFrameViewer
             for (var i = 0; i < this.m_FrameCount[c]; i++)
             {
                 FrameEntry frameEntry = new FrameEntry(reader.ReadUInt16(), reader.ReadUInt16(), reader.ReadInt16(), reader.ReadInt16(), reader.ReadInt16(), reader.ReadInt16(), (uint)(this.m_FrameAddress[c] + (i * 16) + reader.ReadUInt32()), this.m_ColorCount[c]);
-                this.m_Frames[c].Add(frameEntry);
+                if (m_Frames.ContainsKey(c))
+                {
+                    m_Frames[c].Add(frameEntry);
+                }
+                else
+                {
+                    m_Frames[c] = new List<FrameEntry> { frameEntry };
+                }
             }
             return true;
         }
-
-
         private bool ReadPixels(BinaryReader reader, int c)
         {
-            this._ImageDataOffset[c] = this.m_FrameAddress[c] + this.m_FrameCount[c] * 16;
+            this._ImageDataOffset.Add(this.m_FrameAddress[c] + this.m_FrameCount[c] * 16);
             this._ImageData[c] = new byte[(int)(this.m_Length[c] - this._ImageDataOffset[c])];
             reader.BaseStream.Seek(this._ImageDataOffset[c], SeekOrigin.Begin);
             this._ImageData[c] = reader.ReadBytes((int)(this.m_Length[c] - this._ImageDataOffset[c]));
@@ -808,7 +802,7 @@ namespace KRFrameViewer
 
         //TODO:Make it export either the current img with a liste.txt or a combined bmp file
         //Export the image as a bmp
-        private void worker_DoWork(object sender, DoWorkEventArgs e)
+        private void WorkerExportFile(object sender, DoWorkEventArgs e)
         {
             for (int i = 0; i < this.treeFramesBox.Nodes.Count; i++)
             {
@@ -844,7 +838,6 @@ namespace KRFrameViewer
                 else
                 {
                     using (StreamWriter sw = File.CreateText(listeFilePath))
-
                     {
                         WriteListe(sw, animId, animFrame, centerX, centerY);
                     }
@@ -888,12 +881,10 @@ namespace KRFrameViewer
             sw.WriteLine("CenterY: {0}", centerY.ToString());
         }
 
-
         private void worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             this.progressBar.Value = e.ProgressPercentage;
         }
-
         private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             animFrame = 0;
