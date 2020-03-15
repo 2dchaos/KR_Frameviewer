@@ -377,22 +377,6 @@ namespace KRFrameViewer
                     ReadPixels(binaryReader, c);
                     CreateParentNode(c);
                     c++;
-                    //statusBar.Text = m_Colors[0][0].Pixel.ToString();
-                    //ReadFrames(binaryReader, c);
-                    //ReadPixels(binaryReader, c);
-
-                    //if(ReadHeader(binaryReader))
-                    //{
-
-                    //    
-                    //    //ReadFrames(binaryReader, c);
-                    //    //ReadPixels(binaryReader, c);
-                    //    //CreateParentNode(c);
-                    //    
-
-
-                    //}
-
                 }
                 //MessageBox.Show("Ok!");
             }
@@ -400,8 +384,10 @@ namespace KRFrameViewer
 
         private void CreateParentNode(int c)
         {
-            TreeNode parentNode = new TreeNode();
-            parentNode.Text = c.ToString();
+            TreeNode parentNode = new TreeNode()
+            {
+                Tag = c
+            };
             treeFramesBox.Nodes.Add(parentNode);
 
             for (var f = 0; f < this.m_FrameCount[c]; f++)
@@ -414,7 +400,7 @@ namespace KRFrameViewer
                 childNode.Text = frame.ToString();
                 parentNode.Nodes.Add(childNode);
             }
-            //parentNode.Text = this.m_Frames[c][0].ID.ToString();
+            parentNode.Text = this.m_Frames[c][0].ID.ToString();
         }
 
         private void OpenButtonClick(object sender, EventArgs e)
@@ -523,7 +509,9 @@ namespace KRFrameViewer
         //TODO: Export to .vd directly
         private void ChangeFrame(TreeNode childNode, TreeNode parentNode)
         {
-            var c = int.Parse(parentNode.Text);
+            
+            var c = int.Parse(parentNode.Tag.ToString());
+            this.colorTableBox.Image = CreateColorBarBitmap(c);
             var backgroundImgWidth = Math.Abs(this.m_EndCoordsX[c] - this.m_InitCoordsX[c]);
             var backgroundImgHeight = Math.Abs(this.m_EndCoordsY[c] - this.m_InitCoordsY[c]);
             this.treeFramesBox.SelectedNode = childNode;
@@ -640,7 +628,6 @@ namespace KRFrameViewer
             int x;
             int y;
             byte[] numArray = this._ImageData[c];
-
             var frameWidth = Math.Abs(currentFrameEntry.EndCoordsX - currentFrameEntry.InitCoordsX);
             var frameHeight = Math.Abs(currentFrameEntry.EndCoordsY - currentFrameEntry.InitCoordsY);
             var frameImage = new Bitmap(frameWidth, frameHeight);
@@ -661,16 +648,17 @@ namespace KRFrameViewer
             //The address where the data with the pixels starts and ends
             var dataOffset = (int)(currentFrameEntry.DataOffset - this._ImageDataOffset[c]);
 
+            //Draws the pixels based on the stored data
             while (y < frameHeight)
             {
                 var num3 = dataOffset;
-                dataOffset = num3 + 1;
+                dataOffset = num3 + 1;//Start of the drawing, offset + 1
                 byte k = numArray[num3];
                 if (k >= 128)
                 {
                     Color pixel;
                     Color color;
-                    byte num;
+                    byte byte_;
                     var num4 = dataOffset;
                     dataOffset = num4 + 1;
                     var num5 = numArray[num4];
@@ -680,8 +668,8 @@ namespace KRFrameViewer
                     {
                         var num8 = dataOffset;
                         dataOffset = num8 + 1;
-                        num = numArray[num8];
-                        pixel = this.m_Colors[c][num].Pixel;
+                        byte_ = numArray[num8];
+                        pixel = this.m_Colors[c][byte_].Pixel;
                         color = frameImage.GetPixel(x, y);
                         pixel = this.CombineColors(pixel, color, num6);
                         frameImage.SetPixel(x, y, pixel);
@@ -691,8 +679,8 @@ namespace KRFrameViewer
                     {
                         var num9 = dataOffset;
                         dataOffset = num9 + 1;
-                        num = numArray[num9];
-                        pixel = this.m_Colors[c][num].Pixel;
+                        byte_ = numArray[num9];
+                        pixel = this.m_Colors[c][byte_].Pixel;
                         frameImage.SetPixel(x, y, pixel);
                         this.NextCoordinate(ref x, ref y, frameWidth, frameHeight);
                     }
@@ -702,8 +690,8 @@ namespace KRFrameViewer
                     }
                     var num10 = dataOffset;
                     dataOffset = num10 + 1;
-                    num = numArray[num10];
-                    pixel = this.m_Colors[c][num].Pixel;
+                    byte_ = numArray[num10];
+                    pixel = this.m_Colors[c][byte_].Pixel;
                     color = frameImage.GetPixel(x, y);
                     pixel = this.CombineColors(pixel, color, num7);
                     frameImage.SetPixel(x, y, pixel);
@@ -845,6 +833,14 @@ namespace KRFrameViewer
             }
         }
 
+        //Ultima is completely 16 bit based--meaning that each pixel is UWORD value that can be broken down as follows:
+        //        Where U = Unused, R = Red, G = Green and B = Blue
+
+        //So, to convert to 32 bit:
+
+        //Color32 = ((((Color16 >> 10) & 0x1F) * 0xFF / 0x1F) |
+        //((((Color16 >> 5) & 0x1F) * 0xFF / 0x1F) << 8) |
+        //(((Color16 & 0x1F) * 0xFF / 0x1F) << 16));
         //private void CreatePaletteFile(int i)
         //{
 
@@ -892,120 +888,6 @@ namespace KRFrameViewer
             this.progressBar.Value = 0;
             MessageBox.Show("Extraction completed.");
         }
-
-
-        ////animedit - Main One
-        //public static void ExportToVD(int filetype, int body, string file)
-        //{
-        //    AnimIdx[] cache = GetCache(filetype);
-        //    FileIndex fileIndex;
-        //    int index;
-        //    GetFileIndex(body, filetype, 0, 0, out fileIndex, out index);
-        //    using (FileStream fs = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Write))
-        //    {
-        //        using (BinaryWriter bin = new BinaryWriter(fs))
-        //        {
-        //            bin.Write((short)6);
-        //            int animlength = Animations.GetAnimLength(body, filetype);
-        //            int currtype = animlength == 22 ? 0 : animlength == 13 ? 1 : 2;
-        //            bin.Write((short)currtype);
-        //            long indexpos = bin.BaseStream.Position;
-        //            long animpos = bin.BaseStream.Position + 12 * animlength * 5;
-        //            for (int i = index; i < index + animlength * 5; i++)
-        //            {
-        //                AnimIdx anim;
-        //                if (cache != null)
-        //                {
-        //                    if (cache[i] != null)
-        //                        anim = cache[i];
-        //                    else
-        //                        anim = cache[i] = new AnimIdx(i, fileIndex, filetype);
-        //                }
-        //                else
-        //                    anim = cache[i] = new AnimIdx(i, fileIndex, filetype);
-
-        //                if (anim == null)
-        //                {
-        //                    bin.BaseStream.Seek(indexpos, SeekOrigin.Begin);
-        //                    bin.Write((int)-1);
-        //                    bin.Write((int)-1);
-        //                    bin.Write((int)-1);
-        //                    indexpos = bin.BaseStream.Position;
-        //                }
-        //                else
-        //                    anim.ExportToVD(bin, ref indexpos, ref animpos);
-        //            }
-        //        }
-        //    }
-        //}
-
-        //animidx
-        //public void ExportToVD(BinaryWriter bin, ref long indexpos, ref long animpos)
-        //{
-        //    bin.BaseStream.Seek(indexpos, SeekOrigin.Begin);
-        //    if ((Frames == null) || (Frames.Count == 0))
-        //    {
-        //        bin.Write((int)-1);
-        //        bin.Write((int)-1);
-        //        bin.Write((int)-1);
-        //        indexpos = bin.BaseStream.Position;
-        //        return;
-        //    }
-        //    bin.Write((int)animpos);
-        //    indexpos = bin.BaseStream.Position;
-        //    bin.BaseStream.Seek(animpos, SeekOrigin.Begin);
-
-        //    for (int i = 0; i < 0x100; ++i)
-        //        bin.Write((ushort)(Palette[i] ^ 0x8000));
-        //    long startpos = (int)bin.BaseStream.Position;
-        //    bin.Write((int)Frames.Count);
-        //    long seek = (int)bin.BaseStream.Position;
-        //    long curr = bin.BaseStream.Position + 4 * Frames.Count;
-        //    foreach (FrameEdit frame in Frames)
-        //    {
-        //        bin.BaseStream.Seek(seek, SeekOrigin.Begin);
-        //        bin.Write((int)(curr - startpos));
-        //        seek = bin.BaseStream.Position;
-        //        bin.BaseStream.Seek(curr, SeekOrigin.Begin);
-        //        frame.Save(bin);
-        //        curr = bin.BaseStream.Position;
-        //    }
-
-        //    long length = bin.BaseStream.Position - animpos;
-        //    animpos = bin.BaseStream.Position;
-        //    bin.BaseStream.Seek(indexpos, SeekOrigin.Begin);
-        //    bin.Write((int)length);
-        //    bin.Write((int)idxextra);
-        //    indexpos = bin.BaseStream.Position;
-        //}
-
-
-        //public static void LoadFromVD(int filetype, int body, BinaryReader bin)
-        //{
-        //    AnimIdx[] cache = GetCache(filetype);
-        //    FileIndex fileIndex;
-        //    int index;
-        //    GetFileIndex(body, filetype, 0, 0, out fileIndex, out index);
-        //    int animlength = Animations.GetAnimLength(body, filetype) * 5;
-        //    Entry3D[] entries = new Entry3D[animlength];
-
-        //    for (int i = 0; i < animlength; ++i)
-        //    {
-        //        entries[i].lookup = bin.ReadInt32();
-        //        entries[i].length = bin.ReadInt32();
-        //        entries[i].extra = bin.ReadInt32();
-        //    }
-        //    foreach (Entry3D entry in entries)
-        //    {
-        //        if ((entry.lookup > 0) && (entry.lookup < bin.BaseStream.Length) && (entry.length > 0))
-        //        {
-        //            bin.BaseStream.Seek(entry.lookup, SeekOrigin.Begin);
-        //            cache[index] = new AnimIdx(bin, entry.extra);
-        //        }
-        //        ++index;
-        //    }
-        //}
-
     }
 
 }
