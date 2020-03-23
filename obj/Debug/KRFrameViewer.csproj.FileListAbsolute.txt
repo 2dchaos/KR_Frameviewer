@@ -17,3 +17,4 @@ C:\Repositories\KR_Frameviewer\obj\Debug\KRFrameViewer.exe
 C:\Repositories\KR_Frameviewer\obj\Debug\KRFrameViewer.pdb
 C:\Repositories\KR_Frameviewer\obj\Debug\KRFrameViewer.csprojAssemblyReference.cache
 C:\Repositories\KR_Frameviewer\bin\Debug\KRFrameViewer.exe.config
+C:\Repositories\KR_Frameviewer\obj\Debug\KRFrameViewer.csproj.CoreCompileInputs.cache
